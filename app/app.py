@@ -4,6 +4,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 import pandas as pd
 import numpy as np
 import requests
+import os
 
 
 app = Flask(__name__)
@@ -37,6 +38,7 @@ if __name__ == '__main__':
 
     tornado.options.parse_command_line()
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.listen(5000, address='127.0.0.1')
+    port = int(os.environ.get("PORT", 5000))
+    http_server.listen(port=port, address='127.0.0.1')
     tornado.web.Application(debug=True)
     IOLoop.instance().start()
