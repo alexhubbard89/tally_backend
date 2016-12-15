@@ -1,3 +1,4 @@
+gunicorn==19.6.0
 Flask==0.10.1
 Flask-SQLAlchemy==2.1
 numpy==1.10.1
