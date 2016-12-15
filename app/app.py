@@ -14,21 +14,12 @@ app.config.from_object(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-	if request.method == 'POST':
-
-	    username = request.form['username']
-	    password = request.form['password']
-        render_template('login.html')
-	    # matched_credentials = reps_query.search_user(username, password)    
-	    # if matched_credentials == True:
-	    #     user_data = reps_query.get_user_data(username)
-	    #     print user_data
-	    #     return render_template('login_yes.html')
-	    # else:
-	    #     error = "Wrong user name or password"
-	    #     return render_template('login.html', error=error)
-	else:
-		return render_template('login.html')
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        return render_template('login.html')
+    else:
+        return render_template('login.html')
 
 
 
