@@ -1,5 +1,5 @@
 .DS_Store
-db_creds.json
+app/db_creds.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
