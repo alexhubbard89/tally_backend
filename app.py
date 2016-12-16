@@ -5,11 +5,23 @@ import pandas as pd
 import numpy as np
 import requests
 import os
+import psycopg2
+import urlparse
 
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+urlparse.uses_netloc.append("postgres")
+creds = pd.read_json('db_creds.json').loc[0,'creds']
+
+connection = psycopg2.connect(
+    database=creds['database'],
+    user=creds['user'],
+    password=creds['password'],
+    host=creds['host'],
+    port=creds['port']
+)
 
 
 
