@@ -16,6 +16,9 @@ reps_query = imp.load_source('module', 'python/reps_query.py')
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
+
 try:
     urlparse.uses_netloc.append("postgres")
     url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
