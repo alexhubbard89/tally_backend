@@ -5,8 +5,6 @@ import pandas as pd
 import numpy as np
 import requests
 import os
-import psycopg2
-import urlparse
 import sys
 import json
 import logging
@@ -19,31 +17,6 @@ app.config.from_object(__name__)
 
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.ERROR)
-
-try:
-    urlparse.uses_netloc.append("postgres")
-    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
-
-    connection = psycopg2.connect(
-        database=url.path[1:],
-        user=url.username,
-        password=url.password,
-        host=url.hostname,
-        port=url.port
-    )
-except:
-    print "back up db"
-    urlparse.uses_netloc.append("postgres")
-    creds = pd.read_json('db_creds.json').loc[0,'creds']
-
-    connection = psycopg2.connect(
-        database=creds['database'],
-        user=creds['user'],
-        password=creds['password'],
-        host=creds['host'],
-        port=creds['port']
-    )
-
 
 
 @app.route('/', methods=['GET', 'POST'])
