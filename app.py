@@ -7,6 +7,8 @@ import requests
 import os
 import psycopg2
 import urlparse
+import imp
+reps_query = imp.load_source('module', 'python/reps_query.py')
 
 
 app = Flask(__name__)
