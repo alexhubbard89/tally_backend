@@ -14,7 +14,7 @@ app.config.from_object(__name__)
 
 try:
     urlparse.uses_netloc.append("postgres")
-    url = urlparse.urlparse(os.environ["DATABASE_URL"])
+    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
 
     conn = psycopg2.connect(
         database=url.path[1:],
