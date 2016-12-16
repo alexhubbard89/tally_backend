@@ -5,6 +5,9 @@ requests==2.10.0
 requests-oauthlib==0.6.0
 tornado==4.2.1
 psycopg2==2.6.1
+us==0.9.1
+scipy==0.16.0
+pyzipcode==1.0
 
 # ----------------------
 # Production Server
