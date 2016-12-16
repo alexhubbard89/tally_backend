@@ -80,6 +80,23 @@ def login():
         print error
         return jsonify(reselts=None)
 
+## Create New User
+@app.route("/new_user", methods=["POST"])
+def create_user():
+    data = json.loads(request.data.decode())
+    username = data['username']
+    password = data['password']
+    address = data['street']
+    zip_code = data['zip_code']
+    df = reps_query.create_user_params(username, password, address, zip_code)
+    user_made = reps_query.user_info_to_sql(df)
+
+    if user_made == True:
+        return jsonify(result=True)
+    elif user_made == False:
+        error = "oops! That user name already exists."
+        return jsonify(result=False)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
