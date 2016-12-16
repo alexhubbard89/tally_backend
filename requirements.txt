@@ -8,6 +8,8 @@ psycopg2==2.6.1
 us==0.9.1
 scipy==0.16.0
 pyzipcode==1.0
+BeautifulSoup==3.2.1
+beautifulsoup4==4.4.1
 
 # ----------------------
 # Production Server
