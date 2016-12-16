@@ -27,8 +27,17 @@ try:
         host=url.hostname,
         port=url.port
     )
+    connection.close()
+    def open_connection():
+            connection = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+        )
+        return connection
 except:
-    print "back up db"
     urlparse.uses_netloc.append("postgres")
     creds = pd.read_json('db_creds.json').loc[0,'creds']
 
@@ -39,18 +48,31 @@ except:
         host=creds['host'],
         port=creds['port']
     )
+    connection.close()
+    def open_connection():
+        connection = psycopg2.connect(
+            database=creds['database'],
+            user=creds['user'],
+            password=creds['password'],
+            host=creds['host'],
+            port=creds['port']
+            )
+        return connection
 
 
 def dict_gen(sql_query):
     """Turn sqlite3 query into dicitonary. This is Essential
     for returning json results. jsonify will not return sqlite3
     results because its a table, but it will return dic results."""
+    connection = open_connection()
     cursor = connection.cursor()
     cursor.execute(sql_query)
     field_names = [d[0].lower() for d in cursor.description]
     while True:
         rows = cursor.fetchmany()
-        if not rows: return
+        if not rows: 
+            connection.close()
+            return
         for row in rows:
             yield dict(itertools.izip(field_names, row))
 
@@ -271,6 +293,7 @@ def get_senator_votes(zip_code):
 
 ## Get the number of days your congressperson missed
 def get_congress_days_missed(street, city, zip_code):
+    connection = open_connection()
 
     query = """
     select *
@@ -323,10 +346,12 @@ def get_congress_days_missed(street, city, zip_code):
     df_2 = pd.merge(df_2, congress_result[['bioguide_id', 'name', 'party']],
                how='left', on='bioguide_id')
 
+    connection.close()
     return df_2.to_dict(orient='records')
 
 ## Get the number of votes your congressperson missed
 def get_congress_votes_missed(street, city, zip_code):
+    connection = open_connection()
 
     query = """
     select bioguide_id, count(vote) as missing_votes
@@ -359,10 +384,12 @@ def get_congress_votes_missed(street, city, zip_code):
         
     df_2 = pd.merge(df_2, congress_result[['bioguide_id', 'name', 'party']],
                    how='left', on='bioguide_id')
+    connection.close()
     return df_2.to_dict(orient='records')
 
 
 def get_senate_days_missed(zip_code):
+    connection = open_connection()
 
     query = """
     select *
@@ -413,11 +440,13 @@ def get_senate_days_missed(zip_code):
     df_2 = pd.merge(df_2, senator_result[['member_full', 'first_name',
                                           'last_name', 'party']],
                    how='left', on='member_full')
+    connection.close()
     return df_2.to_dict(orient='records')
 
 
 ## Get the number of votes your congressperson missed
 def get_senate_votes_missed(zip_code):
+    connection = open_connection()
 
     query = """
     select member_full, count(vote_cast) as missing_votes
@@ -450,21 +479,25 @@ def get_senate_votes_missed(zip_code):
     df_2 = pd.merge(df_2, senator_result[['member_full', 'first_name',
                                           'last_name', 'party']],
                    how='left', on='member_full')
+    connection.close()
     return df_2.to_dict(orient='records')
 
 
 """I'm trying to depricate the google api
 so I've build these functions to get away from it"""
 def get_senator_user_builder(state_short):
+    connection = open_connection()
     sql_command = """
     select * 
     from current_senate_bio
     where lower(state) = lower('{}');""".format(state_short)
     
     senator_result = pd.read_sql_query(sql_command, connection)
+    connection.close()
     return senator_result.to_dict(orient='records')
 
 def get_congress_leader_user_builder(street, city, state_short, state_long):
+    connection = open_connection()
     district = get_district_from_address(street, city, state_short, state_long)
 
     sql_command = """
@@ -473,6 +506,7 @@ def get_congress_leader_user_builder(street, city, state_short, state_long):
     where state = '{}'
     and ({});""".format(state_long, district)
     congress_result = pd.read_sql_query(sql_command, connection)
+    connection.close()
     return congress_result.to_dict(orient='records')
 
 """Hash password"""
@@ -536,6 +570,7 @@ def create_user_params(user_name, password, address, zip_code):
     return df
 
 def user_info_to_sql(df):
+    connection = open_connection()
     x = list(df.loc[0,])
     cursor = connection.cursor()
 
@@ -581,15 +616,18 @@ def user_info_to_sql(df):
         DETAIL:  Key (user_name)=(user_test) already exists."""
         connection.rollback()
         user_made = False
+    connection.close()
     return user_made
 
 """Check if passwords match for login process"""
 def search_user_name(user_name):
+    connection = open_connection()
     sql_command = """
     select password from  user_tbl
     where user_name = '{}'""".format(user_name)
 
     user_results = pd.read_sql_query(sql_command, connection)
+    connection.close()
     return user_results
 
 def search_user(user_name, password):
@@ -604,9 +642,11 @@ def search_user(user_name, password):
         return "user does not exist"
 
 def get_user_data(user_name):
+    connection = open_connection()
     sql_command = """
     select * from  user_tbl
     where user_name = '{}'""".format(user_name)
 
     user_results = pd.read_sql_query(sql_command, connection)
+    connection.close()
     return user_results
