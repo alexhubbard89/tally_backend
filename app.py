@@ -55,7 +55,7 @@ def index():
         if matched_credentials == True:
             user_data = reps_query.get_user_data(username)
             print user_data
-            return render_template('login_yes.html')
+            return render_template('login_yes.html', user_data=user_data)
         else:
             error = "Wrong user name or password"
             return render_template('login.html', error=error)
