@@ -8,6 +8,7 @@ import os
 import psycopg2
 import urlparse
 import sys
+import json
 import logging
 import imp
 reps_query = imp.load_source('module', 'python/reps_query.py')
@@ -62,6 +63,22 @@ def index():
     else:
         return render_template('login.html')
 
+
+## Login testing
+@app.route("/login", methods=["POST"])
+def login():
+    data = json.loads(request.data.decode())
+    username = data['username']
+    password = data['password']
+    matched_credentials = reps_query.search_user(username, password)    
+    if matched_credentials == True:
+        user_data = reps_query.get_user_data(username)
+        print user_data
+        return jsonify(reselts=user_data.to_dict(orient='records'))
+    else:
+        error = "Wrong user name or password"
+        print error
+        return jsonify(reselts=None)
 
 
 if __name__ == '__main__':
