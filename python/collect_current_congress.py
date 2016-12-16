@@ -269,7 +269,3 @@ def collect_current_congress_house():
     put_into_sql(df)
     
     print 'done!'
-    
-    
-collect_current_congress_house()
-    
