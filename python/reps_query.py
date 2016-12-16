@@ -4,7 +4,7 @@ import itertools
 import os
 import json
 import requests
-from bs4 import BeautifulSoup
+import BeautifulSoup
 from pandas.io.json import json_normalize
 import psycopg2
 import urlparse
