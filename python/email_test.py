@@ -1,4 +1,7 @@
 import smtplib
+import os
+
+
 fromaddr = 'tallyscraper@gmail.com'
 toaddrs  = 'alexhubbard89@gmail.com'
 
@@ -18,6 +21,7 @@ except:
         ])
 username = 'tallyscraper@gmail.com'
 password = os.environ["tallyscraper_password"]
+print "password worked"
 server = smtplib.SMTP('smtp.gmail.com:587')
 server.ehlo()
 server.starttls()
