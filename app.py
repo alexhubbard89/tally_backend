@@ -12,16 +12,29 @@ import urlparse
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-urlparse.uses_netloc.append("postgres")
-creds = pd.read_json('db_creds.json').loc[0,'creds']
+try:
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
-connection = psycopg2.connect(
-    database=creds['database'],
-    user=creds['user'],
-    password=creds['password'],
-    host=creds['host'],
-    port=creds['port']
-)
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+except:
+    print "back up db"
+    urlparse.uses_netloc.append("postgres")
+    creds = pd.read_json('db_creds.json').loc[0,'creds']
+
+    connection = psycopg2.connect(
+        database=creds['database'],
+        user=creds['user'],
+        password=creds['password'],
+        host=creds['host'],
+        port=creds['port']
+    )
 
 
 
