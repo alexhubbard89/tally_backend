@@ -1,7 +1,7 @@
 import smtplib
 import os
 import imp
-collect_current_congress = imp.load_source('module', 'collect_current_congress.py')
+collect_current_congress = imp.load_source('module', './python/collect_current_congress.py')
 
 
 fromaddr = 'tallyscraper@gmail.com'
