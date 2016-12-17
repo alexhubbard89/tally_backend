@@ -97,6 +97,7 @@ def put_into_sql(data_set):
         x = list(data_set.loc[i,])
         
         
+        
         for p in [x]:
             format_str = """INSERT INTO current_senate_bio (
             address, 
