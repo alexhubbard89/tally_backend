@@ -12,10 +12,10 @@ msg = MIMEMultipart('alternative')
 msg['From'] = "tallyscraper@gmail.com"
 msg['To'] = "alexhubbard89@gmail.com"
 all_good = True
-try:
-    collect_current_congress.collect_current_congress_house()
-except:
-    all_good = False
+# try:
+collect_current_congress.collect_current_congress_house()
+# except:
+#     all_good = False
 
 if all_good == True:
     msg['Subject'] = "All good!"
