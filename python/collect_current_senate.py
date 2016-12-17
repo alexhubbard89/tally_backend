@@ -86,8 +86,7 @@ def put_into_sql(data_set):
     phone varchar(255), 
     state varchar(255), 
     website varchar(255),
-    bio_text TEXT,
-    image BOOLEAN);"""
+    bio_text TEXT;"""
 
     cursor.execute(sql_command)
     for i in range(len(data_set)):
@@ -118,7 +117,7 @@ def put_into_sql(data_set):
 
             sql_command = format_str.format(address=p[0], bioguide_id=p[1], class_=p[2], email=p[3], first_name=p[4], last_name=p[5], 
                               leadership_position=p[6], member_full=p[7], party=p[8],phone=p[9], state=p[10],
-                              website=p[11], bio_text=p[12], image=p[13])
+                              website=p[11], bio_text=p[12])
             cursor.execute(sql_command)
 
     # never forget this, if you want the changes to be saved:
