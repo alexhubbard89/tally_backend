@@ -12,6 +12,7 @@ scipy==0.16.0
 pyzipcode==1.0
 lxml==3.4.4
 xmljson==0.1.7
+xmltodict==0.10.2
 
 # ----------------------
 # Production Server
