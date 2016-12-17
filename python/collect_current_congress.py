@@ -239,18 +239,29 @@ def collect_current_congress_house():
     df = pd.DataFrame()
     
     print 'getting data 1'
-    get_congress_by_gov(df)
+    try:
+        get_congress_by_gov(df)
+    except:
+        get_congress_by_gov(df)
     
     print 'getting data 2'
-    get_bio_text(df)
-    
+    try:
+        get_bio_text(df)
+    except:
+        get_bio_text(df)
     print 'getting data 3'
-    collect_remaining_data(df)
+    try:
+        collect_remaining_data(df)
+    except:
+        collect_remaining_data(df)
     
     # print 'get images'
     # get_bio_image(df)
     
     print 'put data in db'
-    put_into_sql(df)
+    try:
+        put_into_sql(df)
+    except:
+        put_into_sql(df)
     
     print 'done!'
