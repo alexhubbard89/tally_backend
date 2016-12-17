@@ -14,11 +14,20 @@ msg['To'] = "alexhubbard89@gmail.com"
 good_collection = ''
 bad_collection = ''
 # try:
-collect_current_congress.collect_current_congress_house()
-good_collection += "Current Congress"
+#     collect_current_congress.collect_current_congress_house()
+#     good_collection += """
+#     Current Congress"""
 # except:
-#     all_good = False
-#     bad_collection += "Current Congress"
+#     bad_collection += """
+#     Current Congress"""
+
+# try:
+collect_current_senate.get_senator_info()
+good_collection += """
+Current Senate"""
+# except:
+#     bad_collection += """
+#     Current Senate"""
 
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
