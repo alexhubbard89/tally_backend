@@ -1,3 +1,5 @@
+BeautifulSoup==3.2.1
+beautifulsoup4==4.4.1
 Flask==0.10.1
 numpy==1.10.1
 pandas==0.17.0
@@ -8,8 +10,7 @@ psycopg2==2.6.1
 us==0.9.1
 scipy==0.16.0
 pyzipcode==1.0
-BeautifulSoup==3.2.1
-beautifulsoup4==4.4.1
+lxml==3.4.4
 
 # ----------------------
 # Production Server
