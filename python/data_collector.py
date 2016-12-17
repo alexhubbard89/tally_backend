@@ -25,6 +25,7 @@ body_msg = """Data Collection Report
 
 Data colltion script(s) that worked: 
 {}
+
 Data colltion script(s) that didn't worked: 
 {}""".format(good_collection, bad_collection)
 body = MIMEText(body_msg)
