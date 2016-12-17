@@ -75,11 +75,11 @@ def get_bio_image(df):
     
     df.loc[:, 'image'] = None
     for i in range(len(df)):
-        url = 'http://bioguide.congress.gov/bioguide/photo/{}/{}.jpg'.format(df['bioguide_id'][i][0], 
-                                                                             df['bioguide_id'][i])
-        r = requests.get(url)
-        r.content
         try:
+            url = 'http://bioguide.congress.gov/bioguide/photo/{}/{}.jpg'.format(df['bioguide_id'][i][0], 
+                                                                                 df['bioguide_id'][i])
+            r = requests.get(url)
+            r.content
             image_save = Image.open(StringIO(r.content))
             image_save.save('../static/img/bio_images/{}.png'.format(df['bioguide_id'][i]))
             df.loc[i, 'image'] = True
