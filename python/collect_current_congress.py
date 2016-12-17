@@ -94,7 +94,6 @@ def get_bio_text(df):
     for i in range(len(df)):
         ## Go to url of each senator
         url = 'http://bioguide.congress.gov/scripts/biodisplay.pl?index={}'.format(df.loc[i, 'bioguide_id'])
-        print url
         r = requests.get(url)
         c = r.content
         soup = BeautifulSoup(c, "lxml")
@@ -193,23 +192,14 @@ def put_into_sql(df):
         website varchar(255),
         address varchar(255),
         phone varchar(255),
-        email varchar(255), 
-        image BOOLEAN);"""
+        email varchar(255));"""
     cursor.execute(sql_command)
 
     ## Put data into table
     for i in range(len(df)):
         print i
         df.loc[i, 'bio_text'] = df.loc[i, 'bio_text'].replace("'", "''")
-        try:
-            df.loc[i, 'bio_text'] = df.loc[i, 'bio_text'].encode(
-                'UTF-8').replace('\xc2\x92',"''").replace('\xc2', "''").replace('\xe2\x80\x99',"''").replace('\x92','')
-        except:
-            'placehold'
-        try:
-            df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text'])
-        except:
-            'placeholder'
+        df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text']).encode('ascii','ignore').decode('unicode_escape')
         x = list(df.loc[i,])
 
         for p in [x]:
@@ -225,16 +215,15 @@ def put_into_sql(df):
             website,
             address,
             phone,
-            email,
-            image)
+            email)
             VALUES ('{name}', '{bioguide_id}', '{state}', '{district}', '{party}', '{year_elected}', 
             '{bio_text}', '{leadership_position}', '{website}', '{address}', '{phone}',
-            '{email}', '{image}');"""
+            '{email}');"""
 
             sql_command = format_str.format(name=p[0], bioguide_id=p[1], state=p[2], district=p[3], 
                                             party=p[4], year_elected=p[5], bio_text=p[6], 
                                             leadership_position=p[7], website=p[8],
-                                            address=p[9], phone=p[10], email=p[11], image=p[12])
+                                            address=p[9], phone=p[10], email=p[11])
             cursor.execute(sql_command)
     # never forget this, if you want the changes to be saved:
     connection.commit()
