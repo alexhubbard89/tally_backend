@@ -13,8 +13,10 @@ msg['From'] = "tallyscraper@gmail.com"
 msg['To'] = "alexhubbard89@gmail.com"
 good_collection = ''
 bad_collection = ''
-# try:
-collect_current_congress.collect_current_congress_house()
+try:
+    collect_current_congress.collect_current_congress_house()
+except:
+    collect_current_congress.collect_current_congress_house()
 good_collection += "Current Congress"
 # except:
 #     all_good = False
