@@ -99,7 +99,10 @@ def get_bio_text(df):
         soup = BeautifulSoup(c, "lxml")
 
         ## Save bio text in data set
-        bio_text = str(soup.findAll('p')[0])
+        try:
+            bio_text = str(soup.findAll('p')[0])
+        except:
+            bio_text = ''
         ## Remove html tags
         df.loc[i, 'bio_text'] = re.sub("<[^>]*>","",bio_text).replace('\r','').replace('\n','')
     return df
