@@ -11,6 +11,7 @@ us==0.9.1
 scipy==0.16.0
 pyzipcode==1.0
 lxml==3.4.4
+xmljson==0.1.7
 
 # ----------------------
 # Production Server
