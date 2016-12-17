@@ -2,13 +2,13 @@ def get_congress_by_gov(df):
     import pandas as pd
     import numpy as np
     import requests
-    from BeautifulSoup import BeautifulSoup
+    from bs4 import BeautifulSoup
     
 
     url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D'
     page = requests.get(url)
     c = page.content
-    soup = BeautifulSoup(c)
+    soup = BeautifulSoup(c, "lxml")
 
     loop_range = int(str(soup.find_all(
             'span', id='facetItemcongress114__2015_2016_count')
@@ -19,7 +19,7 @@ def get_congress_by_gov(df):
         url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D&pageSize=1&page={}'.format(page_search)
         page = requests.get(url)
         c = page.content
-        soup = BeautifulSoup(c)
+        soup = BeautifulSoup(c, "lxml")
         soup.find_all('span', class_="result-heading")
 
         try:
@@ -87,7 +87,7 @@ def get_bio_image(df):
     
 def get_bio_text(df):
     import re
-    from BeautifulSoup import BeautifulSoup
+    from bs4 import BeautifulSoup
     import pandas as pd
 
     ## Loop thorugh every senator to get bios
@@ -96,7 +96,7 @@ def get_bio_text(df):
         url = 'http://bioguide.congress.gov/scripts/biodisplay.pl?index={}'.format(df.loc[i, 'bioguide_id'])
         r = requests.get(url)
         c = r.content
-        soup = BeautifulSoup(c)
+        soup = BeautifulSoup(c, "lxml")
 
         ## Save bio text in data set
         bio_text = str(soup.findAll('p')[0])
@@ -107,14 +107,14 @@ def get_bio_text(df):
 def collect_remaining_data(df):
     import pandas as pd
     import numpy as np
-    from BeautifulSoup import BeautifulSoup
+    from bs4 import BeautifulSoup
 
     for i in range(len(df)):
 
         url = 'https://www.congress.gov/member/{}'.format(df.loc[i, 'bioguide_id'])
         page = requests.get(url)
         c = page.content
-        soup = BeautifulSoup(c)
+        soup = BeautifulSoup(c, "lxml")
 
         try:
             df.loc[i, 'leadership_position'] = str(soup.find_all('div', 
