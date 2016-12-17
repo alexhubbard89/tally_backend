@@ -1,12 +1,15 @@
+import pandas as pd
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
+
 def get_congress_by_gov(df):
-    import pandas as pd
-    import numpy as np
-    import requests
-    from bs4 import BeautifulSoup
-    
 
     url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D'
-    page = requests.get(url)
+    headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+    }
+    page = requests.get(url, headers=headers)
     c = page.content
     soup = BeautifulSoup(c, "lxml")
 
@@ -17,7 +20,7 @@ def get_congress_by_gov(df):
     for i in range(0,loop_range):
         page_search = i + 1
         url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D&pageSize=1&page={}'.format(page_search)
-        page = requests.get(url)
+        page = requests.get(url, headers=headers)
         c = page.content
         soup = BeautifulSoup(c, "lxml")
         soup.find_all('span', class_="result-heading")
@@ -67,7 +70,6 @@ def get_congress_by_gov(df):
     return df
 
 def get_bio_image(df):
-    import requests
     from PIL import Image
     from StringIO import StringIO
     
@@ -87,8 +89,6 @@ def get_bio_image(df):
     
 def get_bio_text(df):
     import re
-    from bs4 import BeautifulSoup
-    import pandas as pd
 
     ## Loop thorugh every senator to get bios
     for i in range(len(df)):
@@ -105,14 +105,14 @@ def get_bio_text(df):
     return df
 
 def collect_remaining_data(df):
-    import pandas as pd
-    import numpy as np
-    from bs4 import BeautifulSoup
+    headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+    }
 
     for i in range(len(df)):
 
         url = 'https://www.congress.gov/member/{}'.format(df.loc[i, 'bioguide_id'])
-        page = requests.get(url)
+        page = requests.get(url, headers=headers)
         c = page.content
         soup = BeautifulSoup(c, "lxml")
 
@@ -165,8 +165,6 @@ def open_connection():
     return connection
 
 def put_into_sql(df):
-    import psycopg2
-    import pandas as pd
 
     connection = open_connection()
     cursor = connection.cursor()
@@ -247,7 +245,6 @@ def collect_current_congress_house():
     congression people, create a table in the database,
     and store them in said table"""
     
-    import pandas as pd
     
     df = pd.DataFrame()
     
