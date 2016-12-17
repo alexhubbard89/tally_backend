@@ -86,7 +86,8 @@ def put_into_sql(data_set):
     phone varchar(255), 
     state varchar(255), 
     website varchar(255),
-    bio_text TEXT;"""
+    bio_text TEXT);"""
+
 
     cursor.execute(sql_command)
     for i in range(len(data_set)):
