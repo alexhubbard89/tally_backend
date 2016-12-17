@@ -95,7 +95,8 @@ def put_into_sql(data_set):
         data_set.loc[i, 'bio_text'] = str(data_set.loc[i, 'bio_text'].decode('unicode_escape').encode('ascii','ignore'))
         x = list(data_set.loc[i,])
         
-
+        
+        
         for p in [x]:
             format_str = """INSERT INTO current_senate_bio (
             address, 
@@ -103,7 +104,7 @@ def put_into_sql(data_set):
             class_, 
             email, 
             first_name, 
-            last_name, 
+            last_name,
             leadership_position, 
             member_full, 
             party, 
