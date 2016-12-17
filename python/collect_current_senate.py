@@ -147,7 +147,9 @@ def get_senate_by_gov(df):
     print url
     r =  requests.get(url, headers=headers, proxies=urllib.getproxies())
 
-    df = json_normalize(pd.DataFrame(xmltodict.parse(r.content)).loc['member', 'contact_information'])
+    x = xmltodict.parse(r.content)
+    x = pd.DataFrame(x).loc['member', 'contact_information']
+    df = json_normalize(x)
     df.columns = df.columns.str.replace('$', '').str.replace('.', '')
 
     return df
