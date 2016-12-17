@@ -104,7 +104,7 @@ def put_into_sql(data_set):
             class_, 
             email, 
             first_name, 
-            last_name, 
+            last_name,
             leadership_position, 
             member_full, 
             party, 
