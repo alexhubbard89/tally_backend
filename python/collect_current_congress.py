@@ -94,6 +94,7 @@ def get_bio_text(df):
     for i in range(len(df)):
         ## Go to url of each senator
         url = 'http://bioguide.congress.gov/scripts/biodisplay.pl?index={}'.format(df.loc[i, 'bioguide_id'])
+        print url
         r = requests.get(url)
         c = r.content
         soup = BeautifulSoup(c, "lxml")
@@ -257,8 +258,8 @@ def collect_current_congress_house():
     print 'getting data 3'
     collect_remaining_data(df)
     
-    print 'get images'
-    get_bio_image(df)
+    # print 'get images'
+    # get_bio_image(df)
     
     print 'put data in db'
     put_into_sql(df)
