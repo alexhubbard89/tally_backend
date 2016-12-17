@@ -75,9 +75,9 @@ def put_into_sql(data_set):
     sql_command = """
     CREATE TABLE current_senate_bio (
     address varchar(255), 
-    bioguide_id PRIMARY KEY, 
+    bioguide_id varchar(255) PRIMARY KEY, 
     class_ varchar(255), 
-    email Hyperlink, 
+    email varchar(255), 
     first_name varchar(255), 
     last_name varchar(255), 
     leadership_position varchar(255), 
@@ -85,8 +85,8 @@ def put_into_sql(data_set):
     party varchar(255), 
     phone varchar(255), 
     state varchar(255), 
-    website Hyperlink,
-    bio_text LONGTEXT,
+    website varchar(255),
+    bio_text TEXT,
     image BOOLEAN);"""
 
     cursor.execute(sql_command)
