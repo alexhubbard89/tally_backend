@@ -11,19 +11,23 @@ toaddrs = 'alexhubbard89@gmail.com'
 msg = MIMEMultipart('alternative')
 msg['From'] = "tallyscraper@gmail.com"
 msg['To'] = "alexhubbard89@gmail.com"
-all_good = True
+good_collection = ''
+bad_collection = ''
 # try:
 collect_current_congress.collect_current_congress_house()
+good_collection += "Current Congress"
 # except:
 #     all_good = False
+#     bad_collection += "Current Congress"
 
-if all_good == True:
-    msg['Subject'] = "All good!"
-    body = MIMEText("You successfully scrapped data!")
-elif all_good == False:
-    msg['Subject'] = "Something broke"
-    body = MIMEText("""Something about the data scraper went bad :(
-    collect_current_congress didn't work""")
+msg['Subject'] = "Data Collection Report"
+body_msg = """Data Collection Report
+
+Data colltion script(s) that worked: 
+{}
+Data colltion script(s) that didn't worked: 
+{}""".format(good_collection, bad_collection)
+body = MIMEText(body_msg)
 msg.attach(body)
 
 username = 'tallyscraper@gmail.com'

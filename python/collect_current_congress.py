@@ -199,7 +199,7 @@ def put_into_sql(df):
     for i in range(len(df)):
         print i
         df.loc[i, 'bio_text'] = df.loc[i, 'bio_text'].replace("'", "''")
-        df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text']).encode('ascii','ignore').decode('unicode_escape')
+        df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text'].encode('ascii','ignore').decode('unicode_escape'))
         x = list(df.loc[i,])
 
         for p in [x]:
