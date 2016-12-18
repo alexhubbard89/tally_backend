@@ -41,6 +41,7 @@ Data colltion script(s) that didn't worked:
 body = MIMEText(body_msg)
 msg.attach(body)
 
+
 username = 'tallyscraper@gmail.com'
 password = os.environ["tallyscraper_password"]
 server = smtplib.SMTP_SSL('smtp.googlemail.com', 465)
