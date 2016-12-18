@@ -20,4 +20,3 @@ xmltodict==0.10.2
 bs4
 gevent
 gunicorn
-xml
