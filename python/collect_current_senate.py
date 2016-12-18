@@ -92,7 +92,6 @@ def put_into_sql(data_set):
     cursor.execute(sql_command)
     for i in range(len(data_set)):
         print i
-        data_set.loc[i, 'address'] = str(data_set.loc[i, 'address'].decode('unicode_escape').encode('ascii','ignore'))
         data_set.loc[i, 'bio_text'] = data_set.loc[i, 'bio_text'].replace("'", "''")
         data_set.loc[i, 'bio_text'] = str(data_set.loc[i, 'bio_text'].decode('unicode_escape').encode('ascii','ignore'))
         x = list(data_set.loc[i,])
@@ -114,9 +113,9 @@ def put_into_sql(data_set):
             state, 
             website,
             bio_text)
-            VALUES ("{address}", "{bioguide_id}", "{class_}", "{email}", "{first_name}", "{last_name}", 
-            "{leadership_position}", "{member_full}", "{party}", "{phone}", "{state}",
-            "{website}", "{bio_text}");"""
+            VALUES ('{address}', '{bioguide_id}', '{class_}', '{email}', '{first_name}', '{last_name}', 
+            '{leadership_position}', '{member_full}', '{party}', '{phone}', '{state}',
+            '{website}', '{bio_text}');"""
 
             sql_command = format_str.format(address=p[0], bioguide_id=p[1], class_=p[2], email=p[3], first_name=p[4], last_name=p[5], 
                               leadership_position=p[6], member_full=p[7], party=p[8],phone=p[9], state=p[10],
