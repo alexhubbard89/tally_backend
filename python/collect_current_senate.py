@@ -147,6 +147,7 @@ def get_senate_by_gov(df):
     url = 'http://www.senate.gov/general/contact_information/senators_cfm.xml'
     print url
     r =  requests.get(url, headers=headers)
+    print r.status_code()
 
     x = ElementTree.fromstring(r.content)
     x = bf.data(x)
