@@ -132,6 +132,7 @@ def get_senate_by_gov(df):
     from json import dumps
     from xmljson import badgerfish as bf
     import xmltodict
+    from xml.etree import ElementTree
     from pandas.io.json import json_normalize
     import urllib
     
@@ -145,9 +146,10 @@ def get_senate_by_gov(df):
     }
     url = 'http://www.senate.gov/general/contact_information/senators_cfm.xml'
     print url
-    r =  requests.get(url, headers=headers, proxies=urllib.getproxies())
+    r =  requests.get(url, headers=headers)
 
-    x = xmltodict.parse(r.content)
+    x = ElementTree.fromstring(r.content)
+    x = bf.data(x)
     x = pd.DataFrame(x).loc['member', 'contact_information']
     df = json_normalize(x)
     df.columns = df.columns.str.replace('$', '').str.replace('.', '')
