@@ -240,21 +240,12 @@ def collect_current_congress_house():
     df = pd.DataFrame()
     
     print 'getting data 1'
-    try:
-        get_congress_by_gov(df)
-    except:
-        get_congress_by_gov(df)
+    get_congress_by_gov(df)
     
     print 'getting data 2'
-    try:
-        get_bio_text(df)
-    except:
-        get_bio_text(df)
+    get_bio_text(df)
     print 'getting data 3'
-    try:
-        collect_remaining_data(df)
-    except:
-        collect_remaining_data(df)
+    collect_remaining_data(df)
     
     # print 'get images'
     # get_bio_image(df)
