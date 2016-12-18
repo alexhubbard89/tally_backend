@@ -150,7 +150,8 @@ def collect_remaining_data(df):
     df.loc[:, 'email'] = None
     return df
 
-def open_connection():
+
+def put_into_sql(df):
     import os
     import psycopg2
     import urlparse
@@ -165,15 +166,6 @@ def open_connection():
             host=url.hostname,
             port=url.port
             )
-    return connection
-
-def put_into_sql(df):
-
-    connection = open_connection()
-    try:
-        connection.rollback()
-    except:
-        "placeholder"
 
     cursor = connection.cursor()
 

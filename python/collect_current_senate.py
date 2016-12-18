@@ -36,10 +36,11 @@ def get_bio_image(df):
             df.loc[i, 'image'] = False
     return df
 
-def open_connection():
+def put_into_sql(data_set):
     import os
     import psycopg2
     import urlparse
+    import pandas as pd
 
     urlparse.uses_netloc.append("postgres")
     url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
@@ -51,19 +52,7 @@ def open_connection():
             host=url.hostname,
             port=url.port
             )
-    return connection
 
-def put_into_sql(data_set):
-    import os
-    import psycopg2
-    import urlparse
-    import pandas as pd
-
-    connection = open_connection()
-    try:
-        connection.rollback()
-    except:
-        "placeholder"
     cursor = connection.cursor()
 
     ## delete 
