@@ -146,6 +146,7 @@ def get_senate_by_gov(df):
     }
     url = 'http://www.senate.gov/general/contact_information/senators_cfm.xml'
     print url
+    
     r =  requests.post(url, headers=headers)
     print r.status_code
 
