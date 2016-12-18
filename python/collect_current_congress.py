@@ -260,9 +260,6 @@ def collect_current_congress_house():
     # get_bio_image(df)
     
     print 'put data in db'
-    try:
-        put_into_sql(df)
-    except:
-        put_into_sql(df)
+    put_into_sql(df)
     
     print 'done!'
