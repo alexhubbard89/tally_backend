@@ -230,6 +230,31 @@ def put_into_sql(df):
     connection.commit()
     connection.close()
 
+## Should I do more data collection?
+def create_new_table_checker(df):
+    import os
+    import psycopg2
+    import urlparse
+
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+
+    connection = psycopg2.connect(
+            database=url.path[1:],
+            user=url.username,
+            password=url.password,
+            host=url.hostname,
+            port=url.port
+            )
+    
+    df_checker = pd.read_sql_query("""select * from current_congress_bio""", connection)
+    connection.close()
+    
+    df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'] == x]) > 0)
+    if len(df.loc[df['duplicate']==False]) > 0:
+        return True
+    elif len(df.loc[df['duplicate']==False]) == 0:
+        return False
 
 def collect_current_congress_house():
     """This script will collect data on current
@@ -240,17 +265,23 @@ def collect_current_congress_house():
     df = pd.DataFrame()
     
     print 'getting data 1'
-    get_congress_by_gov(df)
-    
-    print 'getting data 2'
-    get_bio_text(df)
-    print 'getting data 3'
-    collect_remaining_data(df)
-    
-    # print 'get images'
-    # get_bio_image(df)
-    
-    print 'put data in db'
-    put_into_sql(df)
-    
-    print 'done!'
+    df = get_congress_by_gov(df)
+    print 'check if any of the reps collected are new reps'
+    keep_moving = create_new_table_checker(df)
+    if keep_moving == True:
+
+        print 'getting data 2'
+        get_bio_text(df)
+        print 'getting data 3'
+        collect_remaining_data(df)
+
+        # print 'get images'
+        # get_bio_image(df)
+
+        print 'put data in db'
+        put_into_sql(df)
+        
+        print 'done!'
+        return 'Data was collected'
+    elif keep_moving == False:
+        return 'No Data was collected'
