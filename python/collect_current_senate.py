@@ -74,7 +74,7 @@ def put_into_sql(data_set):
 
     sql_command = """
     CREATE TABLE current_senate_bio (
-    address varchar(255), 
+    address TEXT, 
     bioguide_id varchar(255) PRIMARY KEY, 
     class_ varchar(255), 
     email varchar(255), 
