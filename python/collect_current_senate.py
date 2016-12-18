@@ -215,14 +215,14 @@ def get_senator_info():
             return "But it got a status code of 403 Forbidden HTTP"
     except:
         "it'll break if the df is a dataframe its not comparable"
-    print 'check if any of the reps collected are new reps'
-    keep_moving = create_new_table_checker(df)
-    if keep_moving == True:
-        print 'data collection 2'
-        df = get_bio_text(df)
-        print 'put into sql'
-        put_into_sql(df)
-        print 'done!'
-        return 'Data was collected'
-    elif keep_moving == False:
-        return 'No Data was collected'
+        print 'check if any of the reps collected are new reps'
+        keep_moving = create_new_table_checker(df)
+        if keep_moving == True:
+            print 'data collection 2'
+            df = get_bio_text(df)
+            print 'put into sql'
+            put_into_sql(df)
+            print 'done!'
+            return 'Data was collected'
+        elif keep_moving == False:
+            return 'No Data was collected'

@@ -292,22 +292,22 @@ def collect_current_congress_house():
             return "But it got a status code of 403 Forbidden HTTP"
     except:
         "it'll break if the df is a dataframe its not comparable"
-    print 'check if any of the reps collected are new reps'
-    keep_moving = create_new_table_checker(df)
-    if keep_moving == True:
+        print 'check if any of the reps collected are new reps'
+        keep_moving = create_new_table_checker(df)
+        if keep_moving == True:
 
-        print 'getting data 2'
-        get_bio_text(df)
-        print 'getting data 3'
-        collect_remaining_data(df)
+            print 'getting data 2'
+            get_bio_text(df)
+            print 'getting data 3'
+            collect_remaining_data(df)
 
-        # print 'get images'
-        # get_bio_image(df)
+            # print 'get images'
+            # get_bio_image(df)
 
-        print 'put data in db'
-        put_into_sql(df)
-        
-        print 'done!'
-        return 'Data was collected'
-    elif keep_moving == False:
-        return 'No Data was collected'
+            print 'put data in db'
+            put_into_sql(df)
+            
+            print 'done!'
+            return 'Data was collected'
+        elif keep_moving == False:
+            return 'No Data was collected'
