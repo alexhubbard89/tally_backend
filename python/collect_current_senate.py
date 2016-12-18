@@ -60,6 +60,10 @@ def put_into_sql(data_set):
     import pandas as pd
 
     connection = open_connection()
+    try:
+        connection.rollback()
+    except:
+        "placeholder"
     cursor = connection.cursor()
 
     ## delete 

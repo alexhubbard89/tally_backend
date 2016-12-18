@@ -170,6 +170,11 @@ def open_connection():
 def put_into_sql(df):
 
     connection = open_connection()
+    try:
+        connection.rollback()
+    except:
+        "placeholder"
+
     cursor = connection.cursor()
 
     ## delete 
@@ -180,6 +185,7 @@ def put_into_sql(df):
         cursor.execute("""DROP TABLE current_congress_bio;""")
     except:
         'table did not exist'
+
 
     # Create table
     sql_command = """
