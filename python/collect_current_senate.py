@@ -162,6 +162,8 @@ def get_senate_by_gov(df):
         # Adding empty header as parameters are being sent in payload
         headers = {}
         r = requests.post(url, data=dumps(payload), headers=headers)
+    if r.status_code == 403:
+        return 403
 
     x = ElementTree.fromstring(r.content)
     x = bf.data(x)
@@ -208,6 +210,11 @@ def get_senator_info():
     ## pass data through data collection functions
     print 'data collection 1'
     df = get_senate_by_gov(df)
+    try:
+        if df == 403:
+            return "But it got a status code of 403 Forbidden HTTP"
+    except:
+        "it'll break if the df is a dataframe its not comparable"
     print 'check if any of the reps collected are new reps'
     keep_moving = create_new_table_checker(df)
     if keep_moving == True:
