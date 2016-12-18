@@ -92,6 +92,7 @@ def put_into_sql(data_set):
     cursor.execute(sql_command)
     for i in range(len(data_set)):
         print i
+        data_set.loc[i, 'address'] = str(data_set.loc[i, 'address'].decode('unicode_escape').encode('ascii','ignore'))
         data_set.loc[i, 'bio_text'] = data_set.loc[i, 'bio_text'].replace("'", "''")
         data_set.loc[i, 'bio_text'] = str(data_set.loc[i, 'bio_text'].decode('unicode_escape').encode('ascii','ignore'))
         x = list(data_set.loc[i,])
