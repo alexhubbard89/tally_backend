@@ -148,7 +148,7 @@ def get_senate_by_gov(df):
     print url
     r =  requests.get(url, headers=headers)
 
-    x = xmltodict.parse(r.content)
+    x = ElementTree.fromstring(r.content)
     x = bf.data(x)
     x = pd.DataFrame(x).loc['member', 'contact_information']
     df = json_normalize(x)
