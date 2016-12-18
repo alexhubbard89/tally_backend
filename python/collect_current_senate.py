@@ -171,6 +171,32 @@ def get_senate_by_gov(df):
 
     return df
 
+## Should I do more data collection?
+def create_new_table_checker(df):
+
+    import psycopg2
+    import urlparse
+
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+
+    connection = psycopg2.connect(
+            database=url.path[1:],
+            user=url.username,
+            password=url.password,
+            host=url.hostname,
+            port=url.port
+            )
+    
+    df_checker = pd.read_sql_query("""select * from current_senate_bio""", connection)
+    connection.close()
+    
+    df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'] == x]) > 0)
+    if len(df.loc[df['duplicate']==False]) > 0:
+        return True
+    elif len(df.loc[df['duplicate']==False]) == 0:
+        return False
+
 
 def get_senator_info():
     
@@ -182,9 +208,14 @@ def get_senator_info():
     ## pass data through data collection functions
     print 'data collection 1'
     df = get_senate_by_gov(df)
-    print 'data collection 2'
-    df = get_bio_text(df)
-    print 'put into sql'
-    put_into_sql(df)
-
-    print 'done!'
+    print 'check if any of the reps collected are new reps'
+    keep_moving = create_new_table_checker(df)
+    if keep_moving == True:
+        print 'data collection 2'
+        df = get_bio_text(df)
+        print 'put into sql'
+        put_into_sql(df)
+        print 'done!'
+        return 'Data was collected'
+    elif keep_moving == False:
+        return 'No Data was collected'

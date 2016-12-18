@@ -15,17 +15,17 @@ msg['To'] = "alexhubbard89@gmail.com"
 good_collection = ''
 bad_collection = ''
 try:
-    collect_current_congress.collect_current_congress_house()
+    to_collect_or_not_collect = collect_current_congress.collect_current_congress_house()
     good_collection += """
-    Current Congress"""
+    Current Congress: {}""".format(to_collect_or_not_collect)
 except:
     bad_collection += """
     Current Congress"""
 
 try:
-    collect_current_senate.get_senator_info()
+    to_collect_or_not_collect = collect_current_senate.get_senator_info()
     good_collection += """
-    Current Senate"""
+    Current Senate: {}""".format(to_collect_or_not_collect)
 except:
     bad_collection += """
     Current Senate"""
