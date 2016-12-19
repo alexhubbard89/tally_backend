@@ -210,19 +210,16 @@ def get_senator_info():
     ## pass data through data collection functions
     print 'data collection 1'
     df = get_senate_by_gov(df)
-    try:
-        if df == 403:
-            return "But it got a status code of 403 Forbidden HTTP"
-    except:
-        "it'll break if the df is a dataframe its not comparable"
-        print 'check if any of the reps collected are new reps'
-        keep_moving = create_new_table_checker(df)
-        if keep_moving == True:
-            print 'data collection 2'
-            df = get_bio_text(df)
-            print 'put into sql'
-            put_into_sql(df)
-            print 'done!'
-            return 'Data was collected'
-        elif keep_moving == False:
-            return 'No Data was collected'
+    if df == 403:
+        return "But it got a status code of 403 Forbidden HTTP"
+    print 'check if any of the reps collected are new reps'
+    keep_moving = create_new_table_checker(df)
+    if keep_moving == True:
+        print 'data collection 2'
+        df = get_bio_text(df)
+        print 'put into sql'
+        put_into_sql(df)
+        print 'done!'
+        return 'Data was collected'
+    elif keep_moving == False:
+        return 'No Data was collected'
