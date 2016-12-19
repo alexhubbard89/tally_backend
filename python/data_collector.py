@@ -14,21 +14,21 @@ msg['From'] = "tallyscraper@gmail.com"
 msg['To'] = "alexhubbard89@gmail.com"
 good_collection = ''
 bad_collection = ''
-try:
-    to_collect_or_not_collect = collect_current_congress.collect_current_congress_house()
-    good_collection += """
-    Current Congress: {}""".format(to_collect_or_not_collect)
-except:
-    bad_collection += """
-    Current Congress"""
+# try:
+#     to_collect_or_not_collect = collect_current_congress.collect_current_congress_house()
+#     good_collection += """
+#     Current Congress: {}""".format(to_collect_or_not_collect)
+# except:
+#     bad_collection += """
+#     Current Congress"""
 
-try:
-    to_collect_or_not_collect = collect_current_senate.get_senator_info()
-    good_collection += """
-    Current Senate: {}""".format(to_collect_or_not_collect)
-except:
-    bad_collection += """
-    Current Senate"""
+# try:
+to_collect_or_not_collect = collect_current_senate.get_senator_info()
+good_collection += """
+Current Senate: {}""".format(to_collect_or_not_collect)
+# except:
+# bad_collection += """
+# Current Senate"""
 
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
