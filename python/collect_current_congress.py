@@ -298,15 +298,16 @@ def collect_current_congress_house():
         if keep_moving == True:
 
             print 'getting data 2'
-            get_bio_text(df)
+            df = get_bio_text(df)
             print 'getting data 3'
-            collect_remaining_data(df)
+            df = collect_remaining_data(df)
 
+            print df
             # print 'get images'
             # get_bio_image(df)
 
-            print 'put data in db'
-            put_into_sql(df)
+            # print 'put data in db'
+            # put_into_sql(df)
             
             print 'done!'
             return 'Data was collected'
