@@ -176,7 +176,7 @@ def get_senate_by_gov():
 
 ## Should I do more data collection?
 def create_new_table_checker(df):
-
+    import os
     import psycopg2
     import urlparse
 
