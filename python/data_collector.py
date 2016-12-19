@@ -22,13 +22,13 @@ bad_collection = ''
 #     bad_collection += """
 #     Current Congress"""
 
-try:
+# try:
     to_collect_or_not_collect = collect_current_senate.get_senator_info()
     good_collection += """
     Current Senate: {}""".format(to_collect_or_not_collect)
-except:
-    bad_collection += """
-    Current Senate"""
+# except:
+#     bad_collection += """
+#     Current Senate"""
 
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
