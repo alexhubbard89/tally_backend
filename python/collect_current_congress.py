@@ -286,9 +286,9 @@ def collect_current_congress_house():
     df = pd.DataFrame()
     
     print 'getting data 1'
-    df, status_code_int = get_congress_by_gov()
+    df, status_code = get_congress_by_gov()
     print status_code
-    if status_code_int == 403:
+    if status_code == 403:
         return "But it got a status code of 403 Forbidden HTTP"
     else:
         print 'check if any of the reps collected are new reps'
