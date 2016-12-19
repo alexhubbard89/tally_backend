@@ -287,6 +287,7 @@ def collect_current_congress_house():
     
     print 'getting data 1'
     df, status_code_int = get_congress_by_gov()
+    print status_code
     if status_code_int == 403:
         return "But it got a status code of 403 Forbidden HTTP"
     else:
