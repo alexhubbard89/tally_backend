@@ -22,13 +22,13 @@ bad_collection = ''
 #     bad_collection += """
 #     Current Congress"""
 
-# try:
-to_collect_or_not_collect = collect_current_senate.get_senator_info()
-good_collection += """
-Current Senate: {}""".format(to_collect_or_not_collect)
-# except:
-#     bad_collection += """
-#     Current Senate"""
+try:
+    to_collect_or_not_collect = collect_current_senate.get_senator_info()
+    good_collection += """
+    Current Senate: {}""".format(to_collect_or_not_collect)
+except:
+    bad_collection += """
+    Current Senate"""
 
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
@@ -36,7 +36,7 @@ body_msg = """Data Collection Report
 Data colltion script(s) that worked: 
 {}
 
-Data colltion script(s) that didn't worked: 
+Data colltion script(s) that didn't work: 
 {}""".format(good_collection, bad_collection)
 body = MIMEText(body_msg)
 msg.attach(body)
