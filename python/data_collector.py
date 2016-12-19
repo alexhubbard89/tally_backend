@@ -23,9 +23,9 @@ bad_collection = ''
 #     Current Congress"""
 
 # try:
-    to_collect_or_not_collect = collect_current_senate.get_senator_info()
-    good_collection += """
-    Current Senate: {}""".format(to_collect_or_not_collect)
+to_collect_or_not_collect = collect_current_senate.get_senator_info()
+good_collection += """
+Current Senate: {}""".format(to_collect_or_not_collect)
 # except:
 #     bad_collection += """
 #     Current Senate"""
