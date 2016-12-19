@@ -271,7 +271,7 @@ def create_new_table_checker(df):
     df_checker = pd.read_sql_query("""select * from current_congress_bio""", connection)
     connection.close()
     
-    df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'] == x]) > 0)
+    df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'].astype(str) == str(x)]) > 0)
     if len(df.loc[df['duplicate']==False]) == 0:
         return False
     elif len(df.loc[df['duplicate']==False]) > 0:
@@ -302,7 +302,9 @@ def collect_current_congress_house():
             print 'getting data 3'
             df = collect_remaining_data(df)
 
-            print df
+            print df.loc[df['duplicate']==True]
+            print 'next'
+            print df.loc[df['duplicate']==False]
             # print 'get images'
             # get_bio_image(df)
 
