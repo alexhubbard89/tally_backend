@@ -3,7 +3,7 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
-def get_congress_by_gov(df):
+def get_congress_by_gov():
 
     url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D'
     headers = {
@@ -30,7 +30,8 @@ def get_congress_by_gov(df):
         headers = {}
         page = requests.post(url, data=dumps(payload), headers=headers)
     if page.status_code == 403:
-        return 403
+        df = pd.DataFrame()
+        return df, 403
     c = page.content
     soup = BeautifulSoup(c, "lxml")
 
@@ -88,7 +89,7 @@ def get_congress_by_gov(df):
         except:
             df.loc[i, 'year_elected'] = None
 
-    return df
+    return df, 200
 
 def get_bio_image(df):
     from PIL import Image
@@ -286,12 +287,10 @@ def collect_current_congress_house():
     df = pd.DataFrame()
     
     print 'getting data 1'
-    df = get_congress_by_gov(df)
-    try:
-        if df == 403:
-            return "But it got a status code of 403 Forbidden HTTP"
-    except:
-        "it'll break if the df is a dataframe its not comparable"
+    df, status_code_int = get_congress_by_gov()
+    if status_code_int == 403:
+        return "But it got a status code of 403 Forbidden HTTP"
+    else:
         print 'check if any of the reps collected are new reps'
         keep_moving = create_new_table_checker(df)
         if keep_moving == True:
