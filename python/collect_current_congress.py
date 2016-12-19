@@ -288,11 +288,13 @@ def collect_current_congress_house():
     print 'getting data 1'
     df, status_code = get_congress_by_gov()
     print status_code
+    print "length of df {}".format(len(df))
     if status_code == 403:
         return "But it got a status code of 403 Forbidden HTTP"
     else:
         print 'check if any of the reps collected are new reps'
         keep_moving = create_new_table_checker(df)
+        print "should I keep moving {}".format(keep_moving)
         if keep_moving == True:
 
             print 'getting data 2'
