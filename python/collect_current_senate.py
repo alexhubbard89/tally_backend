@@ -119,7 +119,7 @@ def put_into_sql(data_set):
     connection.commit()
     connection.close()
 
-def get_senate_by_gov(df):
+def get_senate_by_gov():
     import pandas as pd
     import requests
     from json import dumps
@@ -163,7 +163,8 @@ def get_senate_by_gov(df):
         headers = {}
         r = requests.post(url, data=dumps(payload), headers=headers)
     if r.status_code == 403:
-        return 403
+        df = pd.DataFrame()
+        return df, 403
 
     x = ElementTree.fromstring(r.content)
     x = bf.data(x)
@@ -171,7 +172,7 @@ def get_senate_by_gov(df):
     df = json_normalize(x)
     df.columns = df.columns.str.replace('$', '').str.replace('.', '')
 
-    return df
+    return df, 200
 
 ## Should I do more data collection?
 def create_new_table_checker(df):
@@ -200,26 +201,25 @@ def create_new_table_checker(df):
         return False
 
 
-def get_senator_info():
-    
+def get_senator_info():    
     import pandas as pd
 
-    ## make dataframe to pass through functions
-    df = pd.DataFrame()
 
     ## pass data through data collection functions
     print 'data collection 1'
-    df = get_senate_by_gov(df)
-    if df == 403:
+    df, status_code_int = get_senate_by_gov()
+
+    if status_code_int == 403:
         return "But it got a status code of 403 Forbidden HTTP"
-    print 'check if any of the reps collected are new reps'
-    keep_moving = create_new_table_checker(df)
-    if keep_moving == True:
-        print 'data collection 2'
-        df = get_bio_text(df)
-        print 'put into sql'
-        put_into_sql(df)
-        print 'done!'
-        return 'Data was collected'
-    elif keep_moving == False:
-        return 'No Data was collected'
+    else:
+        print 'check if any of the reps collected are new reps'
+        keep_moving = create_new_table_checker(df)
+        if keep_moving == True:
+            print 'data collection 2'
+            df = get_bio_text(df)
+            print 'put into sql'
+            put_into_sql(df)
+            print 'done!'
+            return 'Data was collected'
+        elif keep_moving == False:
+            return 'No Data was collected'
