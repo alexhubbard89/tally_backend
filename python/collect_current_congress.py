@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_congress_by_gov():
-
+    df = pd.DataFrame()
     url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D'
     headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
@@ -30,7 +30,6 @@ def get_congress_by_gov():
         headers = {}
         page = requests.post(url, data=dumps(payload), headers=headers)
     if page.status_code == 403:
-        df = pd.DataFrame()
         return df, 403
     c = page.content
     soup = BeautifulSoup(c, "lxml")
