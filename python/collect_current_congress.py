@@ -274,9 +274,9 @@ def create_new_table_checker(df):
     
     df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'].astype(str) == str(x)]) > 0)
     if len(df.loc[df['duplicate']==False]) == 0:
-        return False, df_checker
+        return df_checker
     elif len(df.loc[df['duplicate']==False]) > 0:
-        return True, df_checker
+        return df_checker
 
 def collect_current_congress_house():
     """This script will collect data on current
@@ -294,9 +294,9 @@ def collect_current_congress_house():
         return "But it got a status code of 403 Forbidden HTTP"
     else:
         print 'check if any of the reps collected are new reps'
-        keep_moving, df_checker = create_new_table_checker(df)
+        keep_moving = create_new_table_checker(df)
         print 'this is the df checker'
-        print df_checker
+        print keep_moving
         print 'true duplicates'
         print df.loc[df['duplicate']==True]
         print 'next'
