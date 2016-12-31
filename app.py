@@ -70,6 +70,4 @@ def create_user():
         error = "oops! That user name already exists."
         return jsonify(result=False)
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
+@r
