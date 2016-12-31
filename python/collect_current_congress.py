@@ -246,7 +246,7 @@ def put_into_sql(df):
     connection.close()
 
 ## Should I do more data collection?
-def create_new_table_checker(df):
+def create_new_table_check(df):
     import os
     import psycopg2
     import urlparse
@@ -291,7 +291,9 @@ def collect_current_congress_house():
                 return "But it got a status code of 403 Forbidden HTTP" 
             elif scraper_counter < 10:
                 df, status_code = get_congress_by_gov(current_congress)
-    keep_moving = create_new_table_checker(df)
+    keep_moving = create_new_table_check(df)
+    print 'keep moving and shit'
+    print keep_moving
     print 'should I keep scraping? {}'.format(keep_moving)
     if keep_moving == False:
         print 'I have the most up to date data!'
