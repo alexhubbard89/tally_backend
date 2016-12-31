@@ -18,6 +18,7 @@ bad_collection = ''
 to_collect_or_not_collect = collect_current_congress.collect_current_congress_house()
 good_collection += """
 Current Congress: {}""".format(to_collect_or_not_collect)
+
 # except:
 #     bad_collection += """
 #     Current Congress"""

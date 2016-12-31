@@ -3,92 +3,79 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
-def get_congress_by_gov():
-    df = pd.DataFrame()
-    url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D'
+def most_recent_congress_number():
+    ## Get current congress
+    url = 'https://www.congress.gov/members'
     headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
     }
-    page = requests.get(url, headers=headers)
-    if page.status_code == 403:
-        payload = {
-            "Host": "www.mywbsite.fr",
-            "Connection": "keep-alive",
-            "Content-Length": 129,
-            "Origin": "https://www.mywbsite.fr",
-            "X-Requested-With": "XMLHttpRequest",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5",
-            "Content-Type": "application/json",
-            "Accept": "*/*",
-            "Referer": "https://www.mywbsite.fr/data/mult.aspx",
-            "Accept-Encoding": "gzip,deflate,sdch",
-            "Accept-Language": "fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4",
-            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-            "Cookie": "ASP.NET_SessionId=j1r1b2a2v2w245; GSFV=FirstVisit=; GSRef=https://www.google.fr/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CHgQFjAA&url=https://www.mywbsite.fr/&ei=FZq_T4abNcak0QWZ0vnWCg&usg=AFQjCNHq90dwj5RiEfr1Pw; HelpRotatorCookie=HelpLayerWasSeen=0; NSC_GSPOUGS!TTM=ffffffff09f4f58455e445a4a423660; GS=Site=frfr; __utma=1.219229010.1337956889.1337956889.1337958824.2; __utmb=1.1.10.1337958824; __utmc=1; __utmz=1.1337956889.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)"
+    r = requests.get(url, headers=headers)
+    page = BeautifulSoup(r.content, 'lxml')
+    
+    return int(str(page.find_all('ul', id='innerbox_congress')).split('facetItemcongress')[1].split('__')[0])
+
+
+def get_congress_by_gov(congress_num):
+    import pandas as pd
+    import numpy as np
+    import requests
+    from bs4 import BeautifulSoup
+    from datetime import datetime
+    from json import dumps
+
+
+    df = pd.DataFrame()
+
+    for i in range(1,3):
+
+        url = 'https://congress.gov/members?q=%7B"chamber":"House","congress":"{}"%7D&pageSize=250&page={}'.format(congress_num, i)
+        headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         }
-        # Adding empty header as parameters are being sent in payload
-        headers = {}
-        page = requests.post(url, data=dumps(payload), headers=headers)
-    if page.status_code == 403:
-        return df, 403
-    c = page.content
-    soup = BeautifulSoup(c, "lxml")
-
-    loop_range = int(str(soup.find_all(
-            'span', id='facetItemcongress114__2015_2016_count')
-                    ).split('">[')[1].split(']<')[0])
-
-    for i in range(0,loop_range):
-        page_search = i + 1
-        url = 'https://congress.gov/members?q=%7B%22chamber%22%3A%22House%22%2C%22congress%22%3A%22114%22%7D&pageSize=1&page={}'.format(page_search)
-        page = requests.get(url, headers=headers)
-        c = page.content
-        soup = BeautifulSoup(c, "lxml")
-        soup.find_all('span', class_="result-heading")
-
-        try:
-            df.loc[i, 'name'] = str(soup.find_all('span', class_="result-heading"
-                                                 )[0]).split('https://www.congress.gov/member/'
-                                                            )[1].split('/')[0].replace('-',' ')
-        except:
-            df.loc[i, 'name'] = None
-
-        try:
-            df.loc[i, 'bioguide_id'] = str(soup.find_all('span', class_="result-heading"
-                                                        )[0]).split('<a href="')[1].split('">')[0].split('/')[-1]
-        except: 
-            df.loc[i, 'bioguide_id'] = None
-
-        try:
-            df.loc[i, 'state'] = str(soup.find_all('div', class_="quick-search-member"
-                                                  )[0]).split('State:')[1].split(
-                '<span>')[1].split('</span>')[0]
-        except:
-            df.loc[i, 'state'] = None
-## This needs to switch to int
-
-        try:
-            df.loc[i, 'district'] = str(soup.find_all('div', class_="quick-search-member"
-                                                     )[0]).split('District:')[1].split(
-                '<span>')[1].split('</span>')[0]
-        except:
-            df.loc[i, 'district'] = 'at large'
-
-        try:
-            df.loc[i, 'party'] = str(soup.find_all('div', class_="quick-search-member"
-                                                  )[0]).split('Party:')[1].split(
-                '<span>')[1].split('</span>')[0]
-        except:
-            df.loc[i, 'party'] = None
-
-        try:
-            df.loc[i, 'year_elected'] = str(soup.find_all('div', class_="quick-search-member"
-                                                         )[0]).split('House: ')[1].split(
-                '</li>')[0].split('-')[0]
-        except:
-            df.loc[i, 'year_elected'] = None
-
-    return df, 200
+        r = requests.get(url, headers=headers)
+        if r.status_code == 403:
+            payload = {
+                "Host": "www.mywbsite.fr",
+                "Connection": "keep-alive",
+                "Content-Length": 129,
+                "Origin": "https://www.mywbsite.fr",
+                "X-Requested-With": "XMLHttpRequest",
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5",
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Referer": "https://www.mywbsite.fr/data/mult.aspx",
+                "Accept-Encoding": "gzip,deflate,sdch",
+                "Accept-Language": "fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4",
+                "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+                "Cookie": "ASP.NET_SessionId=j1r1b2a2v2w245; GSFV=FirstVisit=; GSRef=https://www.google.fr/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CHgQFjAA&url=https://www.mywbsite.fr/&ei=FZq_T4abNcak0QWZ0vnWCg&usg=AFQjCNHq90dwj5RiEfr1Pw; HelpRotatorCookie=HelpLayerWasSeen=0; NSC_GSPOUGS!TTM=ffffffff09f4f58455e445a4a423660; GS=Site=frfr; __utma=1.219229010.1337956889.1337956889.1337958824.2; __utmb=1.1.10.1337958824; __utmc=1; __utmz=1.1337956889.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)"
+            }
+            # Adding empty header as parameters are being sent in payload
+            headers = {}
+            r = requests.get(url, data=dumps(payload), headers=headers)
+            if r.status_code == 403:
+                return df, 403
+        
+        page = BeautifulSoup(r.content, 'lxml')
+        
+        ## Just keep the data I need
+        x = page.find_all('ol', class_='basic-search-results-lists expanded-view')
+        split_data = str(x).split('<li class="expanded">')
+        
+        ## Extract only what I need. Helps performance
+        for j in range(1, len(split_data)):
+        ## Because the loop goes more than once I have to fix the index
+            index_num = len(df)
+            df.loc[index_num, 'name'] = split_data[j].split('https://www.congress.gov/member/')[1].split('/')[0].replace('-',' ')
+            df.loc[index_num, 'bioguide_id'] = split_data[j].split('<a href="')[1].split('">')[0].split('/')[-1]
+            df.loc[index_num, 'state'] = split_data[j].split('State:')[1].split('<span>')[1].split('</span>')[0]
+            try: 
+                df.loc[index_num, 'district'] = split_data[j].split('District:')[1].split('<span>')[1].split('</span>')[0]
+            except:
+                df.loc[index_num, 'district'] = 0
+            df.loc[index_num, 'party'] = split_data[j].split('Party:')[1].split('<span>')[1].split('</span>')[0]
+            df.loc[index_num, 'year_elected'] = split_data[j].split('member-served')[1].split('House: ')[1].split('-')[0]
+            df.loc[index_num, 'served_until'] = split_data[j].split('member-served')[1].split('House: ')[1].split('-')[1].split('</li>')[0]
+    return df.reset_index(drop=True), 200
 
 def get_bio_image(df):
     from PIL import Image
@@ -111,8 +98,10 @@ def get_bio_image(df):
 def get_bio_text(df):
     import re
 
+    print 'total {}'.format(len(df))
     ## Loop thorugh every senator to get bios
     for i in range(len(df)):
+        print i
         ## Go to url of each senator
         url = 'http://bioguide.congress.gov/scripts/biodisplay.pl?index={}'.format(df.loc[i, 'bioguide_id'])
         r = requests.get(url)
@@ -132,8 +121,9 @@ def collect_remaining_data(df):
     headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
     }
-
+    print 'total {}'.format(len(df))
     for i in range(len(df)):
+        print i
 
         url = 'https://www.congress.gov/member/{}'.format(df.loc[i, 'bioguide_id'])
         page = requests.get(url, headers=headers)
@@ -195,20 +185,22 @@ def put_into_sql(df):
     # up-to-date reps. The collection is small
     # so it's not a bottle next to do this.
     try:
-        cursor.execute("""DROP TABLE current_congress_bio;""")
+        cursor.execute("""DROP TABLE congress_bio;""")
     except:
         'table did not exist'
 
 
+
     # Create table
     sql_command = """
-        CREATE TABLE current_congress_bio (
+        CREATE TABLE congress_bio (
         name varchar(255), 
         bioguide_id varchar(255) PRIMARY KEY,  
         state varchar(255), 
-        district varchar(255), 
+        district int, 
         party varchar(255), 
         year_elected int, 
+        served_until varchar(255),
         bio_text TEXT,
         leadership_position varchar(255),
         website varchar(255),
@@ -223,15 +215,17 @@ def put_into_sql(df):
         df.loc[i, 'bio_text'] = df.loc[i, 'bio_text'].replace("'", "''")
         df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text'].decode('unicode_escape').encode('ascii','ignore'))
         x = list(df.loc[i,])
+        print x
 
         for p in [x]:
-            format_str = """INSERT INTO current_congress_bio (
+            format_str = """INSERT INTO congress_bio (
             name, 
             bioguide_id,  
             state, 
             district, 
             party, 
-            year_elected, 
+            year_elected,
+            served_until,
             bio_text,
             leadership_position,
             website,
@@ -239,13 +233,13 @@ def put_into_sql(df):
             phone,
             email)
             VALUES ('{name}', '{bioguide_id}', '{state}', '{district}', '{party}', '{year_elected}', 
-            '{bio_text}', '{leadership_position}', '{website}', '{address}', '{phone}',
+            '{served_until}','{bio_text}', '{leadership_position}', '{website}', '{address}', '{phone}',
             '{email}');"""
 
             sql_command = format_str.format(name=p[0], bioguide_id=p[1], state=p[2], district=p[3], 
-                                            party=p[4], year_elected=p[5], bio_text=p[6], 
-                                            leadership_position=p[7], website=p[8],
-                                            address=p[9], phone=p[10], email=p[11])
+                                            party=p[4], year_elected=p[5], served_until=p[6], bio_text=p[7], 
+                                            leadership_position=p[8], website=p[9],
+                                            address=p[10], phone=p[11], email=p[12])
             cursor.execute(sql_command)
     # never forget this, if you want the changes to be saved:
     connection.commit()
@@ -268,54 +262,60 @@ def create_new_table_checker(df):
             port=url.port
             )
     
-    df_checker = pd.read_sql_query("""select * from current_congress_bio""", connection)
+    df_checker = pd.read_sql_query("""select * from congress_bio where served_until = 'Present'""", connection)
     connection.close()
 
-    
+    df = df.loc[df['served_until'] == 'Present'].reset_index(drop=True)
     df.loc[:,'duplicate'] = df.loc[:,'bioguide_id'].apply(lambda x: len(df_checker.loc[df_checker['bioguide_id'].astype(str) == str(x)]) > 0)
     if len(df.loc[df['duplicate']==False]) == 0:
-        return df_checker
+        return False
     elif len(df.loc[df['duplicate']==False]) > 0:
-        return df_checker
+        return True
 
 def collect_current_congress_house():
     """This script will collect data on current
     congression people, create a table in the database,
     and store them in said table"""
-    
-    
-    df = pd.DataFrame()
-    
+
+    print 'get current congress number'
+    current_congress = most_recent_congress_number()
+
     print 'getting data 1'
-    df, status_code = get_congress_by_gov()
+    df, status_code = get_congress_by_gov(current_congress)
     print status_code
-    print "length of df {}".format(len(df))
+
     if status_code == 403:
-        return "But it got a status code of 403 Forbidden HTTP"
-    else:
-        print 'check if any of the reps collected are new reps'
-        keep_moving = create_new_table_checker(df)
-        print 'this is the df checker'
-        print keep_moving
-        print 'true duplicates'
-        print df.loc[df['duplicate']==True]
-        print 'next'
-        print df.loc[df['duplicate']==False]
-        print "should I keep moving {}".format(keep_moving)
-        if keep_moving == True:
+        scraper_counter = 0
+        while status_code == 403:
+            if scraper_counter == 10:
+                return "But it got a status code of 403 Forbidden HTTP" 
+            elif scraper_counter < 10:
+                df, status_code = get_congress_by_gov(current_congress)
+    keep_moving = create_new_table_checker(df)
+    print 'should I keep scraping? {}'.format(keep_moving)
+    if keep_moving == False:
+        print 'I have the most up to date data!'
+        return 'No New Data was collected'
+    elif keep_moving == True:
+        ## Collect all data
+        master_house_reps = pd.DataFrame()
+        for i in range(101,current_congress+1):
+            print i
+            master_house_reps = master_house_reps.append(get_congress_by_gov(i))
+        master_house_reps = master_house_reps.sort_values(['state', 'district']).drop_duplicates().reset_index(drop=True)
+        print 'getting data 2'
+        master_house_reps = get_bio_text(master_house_reps)
+        print 'getting data 3'
+        master_house_reps = collect_remaining_data(master_house_reps)
 
-            print 'getting data 2'
-            df = get_bio_text(df)
-            print 'getting data 3'
-            df = collect_remaining_data(df)
+        print 'clean zee data'
+        master_house_reps.loc[master_house_reps['leadership_position'].isnull(), 'leadership_position'] = None
+        master_house_reps.loc[master_house_reps['website'].isnull(), 'website'] = None
+        master_house_reps.loc[master_house_reps['address'].isnull(), 'address'] = None
+        master_house_reps.loc[master_house_reps['phone'].isnull(), 'phone'] = None
+        master_house_reps.loc[master_house_reps['email'].isnull(), 'email'] = None
 
-            # print 'get images'
-            # get_bio_image(df)
-
-            # print 'put data in db'
-            # put_into_sql(df)
-            
-            print 'done!'
-            return 'Data was collected'
-        elif keep_moving == False:
-            return 'No Data was collected'
+        print 'put into sql'
+        put_into_sql(master_house_reps)
+        print 'donezo!'
+        return 'All Data was collected!'
