@@ -36,7 +36,6 @@ body_msg = """Data Collection Report
 
 Data colltion script(s) that worked: 
 {}
-
 Data colltion script(s) that didn't work: 
 {}""".format(good_collection, bad_collection)
 body = MIMEText(body_msg)
@@ -44,7 +43,8 @@ msg.attach(body)
 
 
 username = 'tallyscraper@gmail.com'
-password = os.environ["tallyscraper_password"]
+# password = os.environ["tallyscraper_password"]
+password = 'pass123word'
 server = smtplib.SMTP_SSL('smtp.googlemail.com', 465)
 server.login(username, password)
 server.sendmail(fromaddr, toaddrs, msg.as_string())

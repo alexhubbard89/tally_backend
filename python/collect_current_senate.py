@@ -190,7 +190,7 @@ def create_new_table_checker(df):
             host=url.hostname,
             port=url.port
             )
-    
+
     df_checker = pd.read_sql_query("""select * from current_senate_bio""", connection)
     connection.close()
     
@@ -222,4 +222,4 @@ def get_senator_info():
             print 'done!'
             return 'Data was collected'
         elif keep_moving == False:
-            return 'No Data was collected'
+            return 'No New Data was collected'
