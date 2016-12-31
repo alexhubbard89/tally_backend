@@ -69,5 +69,3 @@ def create_user():
     elif user_made == False:
         error = "oops! That user name already exists."
         return jsonify(result=False)
-
-@r
