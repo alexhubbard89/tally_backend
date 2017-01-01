@@ -43,8 +43,7 @@ msg.attach(body)
 
 
 username = 'tallyscraper@gmail.com'
-# password = os.environ["tallyscraper_password"]
-password = 'pass123word'
+password = os.environ["tallyscraper_password"]
 server = smtplib.SMTP_SSL('smtp.googlemail.com', 465)
 server.login(username, password)
 server.sendmail(fromaddr, toaddrs, msg.as_string())

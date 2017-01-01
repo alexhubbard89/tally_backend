@@ -281,6 +281,7 @@ def collect_current_congress_house():
     and store them in said table"""
 
     print 'get current congress number'
+    missing_years = ''
     current_congress = most_recent_congress_number()
 
     print 'getting data 1'
@@ -306,7 +307,18 @@ def collect_current_congress_house():
         master_house_reps = pd.DataFrame()
         for i in range(101,current_congress+1):
             print i
-            master_house_reps = master_house_reps.append(get_congress_by_gov(i))
+            df, status_code = get_congress_by_gov(i)
+            print status_code
+            if status_code == 403:
+                scraper_counter = 0
+                while status_code == 403:
+                    if scraper_counter == 10:
+                        missing_years += "403 Forbidden HTTP for congress {}".format(i)
+                        status_code = 200
+                    elif scraper_counter < 10:
+                        df, status_code = get_congress_by_gov(current_congress)
+            ## Now append the data
+            master_house_reps = master_house_reps.append(df)
         master_house_reps = master_house_reps.sort_values(['state', 'district']).drop_duplicates().reset_index(drop=True)
         print 'getting data 2'
         master_house_reps = get_bio_text(master_house_reps)
@@ -323,4 +335,7 @@ def collect_current_congress_house():
         print 'put into sql'
         put_into_sql(master_house_reps)
         print 'donezo!'
-        return 'All Data was collected!'
+        if len(missing_years) > 0:
+            return 'Data was collected but - {}'.format(missing_years)
+        else:
+            return 'All Data was collected!'
