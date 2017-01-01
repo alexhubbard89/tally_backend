@@ -63,21 +63,21 @@ def get_congress_by_gov(congress_num):
         
         ## Extract only what I need. Helps performance
         for j in range(1, len(split_data)):
-        num_times_served = len(split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', '))
-        for times in range(num_times_served):
-            ## Because the loop goes more than once I have to fix the index
-            ## Also because someone can serve more than onces I need to include that
-            index_num = len(df)
-            df.loc[index_num, 'name'] = split_data[j].split('https://www.congress.gov/member/')[1].split('/')[0].replace('-',' ')
-            df.loc[index_num, 'bioguide_id'] = split_data[j].split('<a href="')[1].split('">')[0].split('/')[-1]
-            df.loc[index_num, 'state'] = split_data[j].split('State:')[1].split('<span>')[1].split('</span>')[0]
-            try: 
-                df.loc[index_num, 'district'] = split_data[j].split('District:')[1].split('<span>')[1].split('</span>')[0]
-            except:
-                df.loc[index_num, 'district'] = 0
-            df.loc[index_num, 'party'] = split_data[j].split('Party:')[1].split('<span>')[1].split('</span>')[0]
-            df.loc[index_num, 'year_elected'] = split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', ')[times].split('-')[0]
-            df.loc[index_num, 'served_until'] = split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', ')[times].split('-')[1]
+            num_times_served = len(split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', '))
+            for times in range(num_times_served):
+                ## Because the loop goes more than once I have to fix the index
+                ## Also because someone can serve more than onces I need to include that
+                index_num = len(df)
+                df.loc[index_num, 'name'] = split_data[j].split('https://www.congress.gov/member/')[1].split('/')[0].replace('-',' ')
+                df.loc[index_num, 'bioguide_id'] = split_data[j].split('<a href="')[1].split('">')[0].split('/')[-1]
+                df.loc[index_num, 'state'] = split_data[j].split('State:')[1].split('<span>')[1].split('</span>')[0]
+                try: 
+                    df.loc[index_num, 'district'] = split_data[j].split('District:')[1].split('<span>')[1].split('</span>')[0]
+                except:
+                    df.loc[index_num, 'district'] = 0
+                df.loc[index_num, 'party'] = split_data[j].split('Party:')[1].split('<span>')[1].split('</span>')[0]
+                df.loc[index_num, 'year_elected'] = split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', ')[times].split('-')[0]
+                df.loc[index_num, 'served_until'] = split_data[j].split('member-served')[1].split('House: ')[1].split('</li>')[0].split(', ')[times].split('-')[1]
     return df.reset_index(drop=True), 200
 
 def get_bio_image(df):
