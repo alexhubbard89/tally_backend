@@ -165,7 +165,7 @@ def collect_remaining_data(df):
     return df
 
 
-def put_into_sql(df):
+def put_into_sql_congress(df):
     import os
     import psycopg2
     import urlparse
@@ -175,6 +175,8 @@ def put_into_sql(df):
 
     connection = psycopg2.connect(
             database=url.path[1:],
+
+
             user=url.username,
             password=url.password,
             host=url.hostname,
@@ -198,7 +200,7 @@ def put_into_sql(df):
     sql_command = """
         CREATE TABLE congress_bio (
         name varchar(255), 
-        bioguide_id varchar(255) PRIMARY KEY,  
+        bioguide_id varchar(255),  
         state varchar(255), 
         district int, 
         party varchar(255), 
@@ -218,7 +220,6 @@ def put_into_sql(df):
         df.loc[i, 'bio_text'] = df.loc[i, 'bio_text'].replace("'", "''")
         df.loc[i, 'bio_text'] = str(df.loc[i, 'bio_text'].decode('unicode_escape').encode('ascii','ignore'))
         x = list(df.loc[i,])
-        print x
 
         for p in [x]:
             format_str = """INSERT INTO congress_bio (
@@ -276,6 +277,7 @@ def create_new_table_check(df):
         return True
 
 def collect_current_congress_house():
+    import time
     """This script will collect data on current
     congression people, create a table in the database,
     and store them in said table"""
@@ -296,8 +298,6 @@ def collect_current_congress_house():
             elif scraper_counter < 10:
                 df, status_code = get_congress_by_gov(current_congress)
     keep_moving = create_new_table_check(df)
-    print 'keep moving and shit'
-    print keep_moving
     print 'should I keep scraping? {}'.format(keep_moving)
     if keep_moving == False:
         print 'I have the most up to date data!'
@@ -321,9 +321,36 @@ def collect_current_congress_house():
             master_house_reps = master_house_reps.append(df)
         master_house_reps = master_house_reps.sort_values(['state', 'district']).drop_duplicates().reset_index(drop=True)
         print 'getting data 2'
-        master_house_reps = get_bio_text(master_house_reps)
+        scraper_counter = 0
+        try_scrape = True
+        while try_scrape == True:
+            try:
+                if scraper_counter == 3:
+                    return "broken"
+                elif scraper_counter < 3:
+                    master_house_reps = get_bio_text(master_house_reps)
+                    try_scrape = False
+            except:
+                print 'I tried'
+                scraper_counter += 1
+                time.sleep(5)
+
+
         print 'getting data 3'
-        master_house_reps = collect_remaining_data(master_house_reps)
+        scraper_counter = 0
+        try_scrape = True
+        while try_scrape == True:
+            try:
+                if scraper_counter == 3:
+                    return "broken"
+                elif scraper_counter < 3:
+                    master_house_reps = collect_remaining_data(master_house_reps)
+                    try_scrape = False
+            except:
+                print 'I tried'
+                scraper_counter += 1
+                time.sleep(5)
+
 
         print 'clean zee data'
         master_house_reps.loc[master_house_reps['leadership_position'].isnull(), 'leadership_position'] = None
@@ -333,7 +360,7 @@ def collect_current_congress_house():
         master_house_reps.loc[master_house_reps['email'].isnull(), 'email'] = None
 
         print 'put into sql'
-        put_into_sql(master_house_reps)
+        put_into_sql_congress(master_house_reps)
         print 'donezo!'
         if len(missing_years) > 0:
             return 'Data was collected but - {}'.format(missing_years)

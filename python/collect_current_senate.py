@@ -203,6 +203,7 @@ def create_new_table_checker(df):
 
 def get_senator_info():    
     import pandas as pd
+    import time
 
 
     ## pass data through data collection functions
@@ -210,16 +211,24 @@ def get_senator_info():
     df, status_code_int = get_senate_by_gov()
 
     if status_code_int == 403:
-        return "But it got a status code of 403 Forbidden HTTP"
-    else:
-        print 'check if any of the reps collected are new reps'
-        keep_moving = create_new_table_checker(df)
-        if keep_moving == True:
-            print 'data collection 2'
-            df = get_bio_text(df)
-            print 'put into sql'
-            put_into_sql(df)
-            print 'done!'
-            return 'Data was collected'
-        elif keep_moving == False:
-            return 'No New Data was collected'
+        scraper_counter = 0
+        while status_code_int == 403: 
+            if scraper_counter < 10:
+                time.sleep(5)
+                df, status_code_int = get_senate_by_gov()
+            elif scraper_counter == 10:
+                return "But it got a status code of 403 Forbidden HTTP"
+            scraper_counter += 1
+    ## It only makes it here if it collected data.
+    ## If 403 too many times the function returns
+    keep_moving = create_new_table_checker(df)
+    print 'should I keep scraping? {}'.format(keep_moving)
+    if keep_moving == True:
+        print 'data collection 2'
+        df = get_bio_text(df)
+        print 'put into sql'
+        put_into_sql(df)
+        print 'done!'
+        return 'Data was collected'
+    elif keep_moving == False:
+        return 'No New Data was collected'
