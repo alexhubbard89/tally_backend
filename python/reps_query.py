@@ -12,8 +12,9 @@ import us
 import math
 from scipy import stats
 from psycopg2 import IntegrityError
-from pyzipcode import ZipCodeDatabase
-zcdb = ZipCodeDatabase()
+# from pyzipcode import ZipCodeDatabase
+# zcdb = ZipCodeDatabase()
+import zipcode
 
 
 try:
@@ -550,9 +551,11 @@ def create_user_params(user_name, password, address, zip_code):
     df.loc[0, 'password'] = hash_password(password)
     df.loc[0, 'street'] = address
     df.loc[0, 'zip_code'] = int(zip_code)
-    zipcode = zcdb[int(df.loc[0, 'zip_code'])]
-    df.loc[0, 'city'] = zipcode.city
-    df.loc[0, 'state_short'] = zipcode.state
+    ## The zcdb was outdated. I'm using this because it's updated
+    # zipcode = zcdb[int(df.loc[0, 'zip_code'])]
+    myzip = zipcode.isequal(int(df.loc[0, 'zip_code']))
+    df.loc[0, 'city'] = myzip.city
+    df.loc[0, 'state_short'] = myzip.state
     df.loc[0, 'state_long'] = str(us.states.lookup(df.loc[0, 'state_short']))
     
     ## Get reps 
