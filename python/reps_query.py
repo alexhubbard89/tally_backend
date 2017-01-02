@@ -550,10 +550,10 @@ def create_user_params(user_name, password, address, zip_code):
     df.loc[0, 'user_name'] = user_name
     df.loc[0, 'password'] = hash_password(password)
     df.loc[0, 'street'] = address
-    df.loc[0, 'zip_code'] = int(zip_code)
+    df.loc[0, 'zip_code'] = str(zip_code)
     ## The zcdb was outdated. I'm using this because it's updated
     # zipcode = zcdb[int(df.loc[0, 'zip_code'])]
-    myzip = zipcode.isequal(int(df.loc[0, 'zip_code']))
+    myzip = zipcode.isequal(df.loc[0, 'zip_code'])
     df.loc[0, 'city'] = myzip.city
     df.loc[0, 'state_short'] = myzip.state
     df.loc[0, 'state_long'] = str(us.states.lookup(df.loc[0, 'state_short']))
