@@ -79,6 +79,7 @@ def create_user():
         password = request.form['password']
         address = request.form['street']
         zip_code = request.form['zip_code']
+    print zip_code
     df = reps_query.create_user_params(username, password, address, zip_code)
     user_made = reps_query.user_info_to_sql(df)
 
