@@ -56,11 +56,19 @@ def login():
 ## Create New User
 @app.route("/new_user", methods=["POST"])
 def create_user():
-    data = json.loads(request.data.decode())
-    username = data['username']
-    password = data['password']
-    address = data['street']
-    zip_code = data['zip_code']
+    try:
+        print 'trying first way'
+        data = json.loads(request.data.decode())
+        username = data['username']
+        password = data['password']
+        address = data['street']
+        zip_code = data['zip_code']
+    except:
+        print 'trying second way'
+        username = request.form['username']
+        password = request.form['password']
+        address = request.form['street']
+        zip_code = request.form['zip_code']
     df = reps_query.create_user_params(username, password, address, zip_code)
     user_made = reps_query.user_info_to_sql(df)
 
