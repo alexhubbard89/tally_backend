@@ -40,12 +40,19 @@ def index():
 ## Login testing
 @app.route("/login", methods=["POST"])
 def login():
-    data = json.loads(request.data.decode())
     try:
-        username = data['username']
+        data = json.loads(request.data.decode())
+        try:
+            username = data['username']
+        except:
+            username = data['email']
+        password = data['password']
     except:
-        username = data['email']
-    password = data['password']
+        try:
+            username = request.form['username']
+        except:
+            username = request.form['email']
+        password = request.form['password']
     matched_credentials = reps_query.search_user(username, password)    
     if matched_credentials == True:
         user_data = reps_query.get_user_data(username)
