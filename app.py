@@ -41,7 +41,10 @@ def index():
 @app.route("/login", methods=["POST"])
 def login():
     data = json.loads(request.data.decode())
-    username = data['username']
+    try:
+        username = data['username']
+    except:
+        username = data['email']
     password = data['password']
     matched_credentials = reps_query.search_user(username, password)    
     if matched_credentials == True:
@@ -59,13 +62,20 @@ def create_user():
     try:
         print 'trying first way'
         data = json.loads(request.data.decode())
+        try:
+            username = data['username']
+        except:
+            username = data['email']
         username = data['username']
         password = data['password']
         address = data['street']
         zip_code = data['zip_code']
     except:
         print 'trying second way'
-        username = request.form['username']
+        try:
+            username = request.form['username']
+        except:
+            username = request.form['email']
         password = request.form['password']
         address = request.form['street']
         zip_code = request.form['zip_code']
