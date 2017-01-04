@@ -1,6 +1,7 @@
 from __future__ import division
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify, Response
+from flask_cors import CORS, cross_origin
 import pandas as pd
 import numpy as np
 import requests
@@ -13,6 +14,7 @@ reps_query = imp.load_source('module', 'python/reps_query.py')
 
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(__name__)
 
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
