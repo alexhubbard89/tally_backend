@@ -71,25 +71,26 @@ def create_user():
     try:
         print 'trying first way'
         data = json.loads(request.data.decode())
-        try:
-            username = data['username']
-        except:
-            username = data['email']
-        username = data['username']
+        email = data['email']
         password = data['password']
-        address = data['street']
+        first_name = data['first_name']
+        last_name = data['last_name']
+        gender = data['gender']
+        dob = data['dob']
+        street = data['street']
         zip_code = data['zip_code']
     except:
         print 'trying second way'
-        try:
-            username = request.form['username']
-        except:
-            username = request.form['email']
+        email = request.form['email']
         password = request.form['password']
-        address = request.form['street']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        gender = request.form['gender']
+        dob = request.form['dob']
+        street = request.form['street']
         zip_code = request.form['zip_code']
     print zip_code
-    df = reps_query.create_user_params(username, password, address, zip_code)
+    df = reps_query.create_user_params(email, password, first_name, last_name, gender, dob, street, zip_code)
     user_made = reps_query.user_info_to_sql(df)
 
     if user_made == True:
@@ -97,3 +98,7 @@ def create_user():
     elif user_made == False:
         error = "oops! That user name already exists."
         return jsonify(result=False)
+
+if __name__ == '__main__':
+    ## app.run is to run with flask
+    app.run(debug=True)
