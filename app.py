@@ -2,6 +2,7 @@ from __future__ import division
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify, Response
 from flask_cors import CORS, cross_origin
+import json
 import pandas as pd
 import numpy as np
 import requests
@@ -59,7 +60,8 @@ def login():
     if matched_credentials == True:
         user_data = reps_query.get_user_data(username)
         print user_data
-        return jsonify(reselts=user_data.to_dict(orient='records'))
+        return json.dumps(results=user_data.to_dict(orient='records'))
+        # return jsonify(reselts=user_data.to_dict(orient='records'))
     else:
         error = "Wrong user name or password"
         print error
