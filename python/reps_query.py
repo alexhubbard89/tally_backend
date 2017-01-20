@@ -14,7 +14,8 @@ from scipy import stats
 from psycopg2 import IntegrityError
 # from pyzipcode import ZipCodeDatabase
 # zcdb = ZipCodeDatabase()
-import zipcode
+# import zipcode
+from uszipcode import ZipcodeSearchEngine
 
 
 try:
@@ -122,13 +123,8 @@ def get_district_from_address(street, city, state_short, state_long):
     }
 
     response = requests.request(method='POST', url=url, data=form_data, headers=headers)
-    x = str(response.content.split('src="/zip/pictures/{}'.format(state_short.lower()))[1].split('_')[0])
-
-    ## Make district query
-    total_query = "district = '{}'".format(int(x))
-    if total_query == "district = '0'":
-        total_query = total_query.replace('0', 'at large')
-    return total_query
+    district = str(response.content.split('src="/zip/pictures/{}'.format(state_short.lower()))[1].split('_')[0])
+    return int(district)
     
 
 def get_district_num(zip_code,state_short):
@@ -538,38 +534,35 @@ def test_password(password, hashed, version=1):
     return False
 
 """Functions to create user info and put into sql"""
+ 
+def create_user_params(email, password, first_name, last_name, gender, dob, street, zip_code):
+    import pandas as pd
 
-def create_user_params(user_name, password, address, zip_code):   
+    """Hold data about the user. We've collected all of the information we need from the
+    user. The last thing that needs to be done is to find out what state they live in, and which 
+    district they are from. Then we can find their Presenent reps from that info."""
     
-    df = pd.DataFrame(columns=[['user_name', 'password', 'street', 
-        'zip_code', 'city', 'state_short', 'state_long', 
-        'senator_1_member_full', 'senator_1_bioguide_id', 
-        'senator_2_member_full', 'senator_2_bioguide_id', 
-        'congressperson_bioguide_id']])
-    
-    df.loc[0, 'user_name'] = user_name
+    search = ZipcodeSearchEngine()
+    zipcode = search.by_zipcode(str(zip_code))
+
+    df = pd.DataFrame(columns=[['email', 'password', 'first_name', 
+        'last_name', 'gender', 'dob', 'street', 'zip_code', 'city',
+        'state_short', 'state_long', 'district']])
+
+    df.loc[0, 'email'] = email
     df.loc[0, 'password'] = hash_password(password)
-    df.loc[0, 'street'] = address
+    df.loc[0, 'first_name'] = first_name.lower().title()
+    df.loc[0, 'last_name'] = last_name.lower().title()
+    df.loc[0, 'gender'] = gender.lower().title()
+    df.loc[0, 'dob'] = pd.to_datetime(dob)
+    df.loc[0, 'street'] = street.lower().title()
     df.loc[0, 'zip_code'] = str(zip_code)
-    ## The zcdb was outdated. I'm using this because it's updated
-    # zipcode = zcdb[int(df.loc[0, 'zip_code'])]
-    myzip = zipcode.isequal(df.loc[0, 'zip_code'])
-    df.loc[0, 'city'] = myzip.city
-    df.loc[0, 'state_short'] = myzip.state
+    df.loc[0, 'city'] = str(zipcode['City'].lower().title())
+    df.loc[0, 'state_short'] = str(zipcode['State'])
     df.loc[0, 'state_long'] = str(us.states.lookup(df.loc[0, 'state_short']))
-    
-    ## Get reps 
-    senator_result = get_senator_user_builder(df.loc[0, 'state_short'])
-    congress_result = get_congress_leader_user_builder(df.loc[0, 'street'], df.loc[0, 'city'],
-                                                       df.loc[0, 'state_short'], df.loc[0, 'state_long'])
-    
-    ## Add reps ids to user info
-    df.loc[0, 'senator_1_member_full'] = senator_result[0]['member_full']
-    df.loc[0, 'senator_1_bioguide_id'] = senator_result[0]['bioguide_id']
-    df.loc[0, 'senator_2_member_full'] = senator_result[1]['member_full']
-    df.loc[0, 'senator_2_bioguide_id'] = senator_result[1]['bioguide_id']
-    df.loc[0, 'congressperson_bioguide_id'] = congress_result[0]['bioguide_id']
-    
+    df.loc[0, 'district'] = get_district_from_address(street, df.loc[0, 'city'], df.loc[0, 'state_short'],
+                                                      df.loc[0, 'state_long'])
+
     return df
 
 def user_info_to_sql(df):
@@ -580,34 +573,33 @@ def user_info_to_sql(df):
     for p in [x]:
         format_str = """
         INSERT INTO user_tbl (
-        user_name,
+        email,
         password,
         street,
         zip_code,
         city,
         state_short,
         state_long,
-        senator_1_member_full,
-        senator_1_bioguide_id,
-        senator_2_member_full,
-        senator_2_bioguide_id,
-        congressperson_bioguide_id)
-        VALUES ('{user_name}', '{password}', '{street}', '{zip_code}', '{city}', '{state_short}',
-                '{state_long}', '{senator_1_member_full}', '{senator_1_bioguide_id}', 
-                '{senator_2_member_full}', '{senator_2_bioguide_id}', 
-                '{congressperson_bioguide_id}');"""
+        first_name,
+        last_name,
+        gender,
+        dob,
+        district)
+        VALUES ('{email}', '{password}', '{street}', '{zip_code}', '{city}', '{state_short}',
+                '{state_long}', '{first_name}', '{last_name}', 
+                '{gender}', '{dob}', '{district}');"""
 
 
-    sql_command = format_str.format(user_name=df.loc[0, 'user_name'], 
+    sql_command = format_str.format(email=df.loc[0, 'email'], 
         password=df.loc[0, 'password'], street=df.loc[0, 'street'], 
         zip_code=int(df.loc[0, 'zip_code']), city=df.loc[0, 'city'], 
         state_short=df.loc[0, 'state_short'], 
         state_long=df.loc[0, 'state_long'],  
-        senator_1_member_full=df.loc[0, 'senator_1_member_full'], 
-        senator_1_bioguide_id=df.loc[0, 'senator_1_bioguide_id'], 
-        senator_2_member_full=df.loc[0, 'senator_2_member_full'], 
-        senator_2_bioguide_id=df.loc[0, 'senator_2_bioguide_id'], 
-        congressperson_bioguide_id=df.loc[0, 'congressperson_bioguide_id'])
+        first_name=df.loc[0, 'first_name'], 
+        last_name=df.loc[0, 'last_name'], 
+        gender=df.loc[0, 'gender'], 
+        dob=df.loc[0, 'dob'], 
+        district=int(df.loc[0, 'district']))
 
 
     try:
