@@ -59,13 +59,14 @@ def login():
     matched_credentials = reps_query.search_user(username, password)    
     if matched_credentials == True:
         user_data = reps_query.get_user_data(username)
+        user_data = user_data.drop(['dob'], 1)
         print user_data
-        return json.dumps(results=user_data.to_dict(orient='records'))
-        # return jsonify(reselts=user_data.to_dict(orient='records'))
+        # return json.dumps(results=user_data.to_dict(orient='records'))
+        return jsonify(results=user_data.to_dict(orient='records'))
     else:
         error = "Wrong user name or password"
         print error
-        return jsonify(reselts=None)
+        return jsonify(results=None)
 
 ## Create New User
 @app.route("/new_user", methods=["POST"])
