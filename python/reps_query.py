@@ -619,7 +619,7 @@ def search_user_name(user_name):
     connection = open_connection()
     sql_command = """
     select password from  user_tbl
-    where user_name = '{}'""".format(user_name)
+    where email = '{}'""".format(user_name)
 
     user_results = pd.read_sql_query(sql_command, connection)
     connection.close()
@@ -640,7 +640,7 @@ def get_user_data(user_name):
     connection = open_connection()
     sql_command = """
     select * from  user_tbl
-    where user_name = '{}'""".format(user_name)
+    where email = '{}'""".format(user_name)
 
     user_results = pd.read_sql_query(sql_command, connection)
     connection.close()
