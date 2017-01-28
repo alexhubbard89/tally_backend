@@ -42,18 +42,33 @@ def put_into_sql(data_set):
     import urlparse
     import pandas as pd
 
-    urlparse.uses_netloc.append("postgres")
-    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+    try:
+        urlparse.uses_netloc.append("postgres")
+        url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
 
-    connection = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port
-            )
+        connection = psycopg2.connect(
+                database=url.path[1:],
 
-    cursor = connection.cursor()
+
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port
+                )
+
+        cursor = connection.cursor()
+    except:
+        urlparse.uses_netloc.append("postgres")
+        creds = pd.read_json('/Users/Alexanderhubbard/Documents/projects/reps_app/app/db_creds.json').loc[0,'creds']
+
+        connection = psycopg2.connect(
+            database=creds['database'],
+            user=creds['user'],
+            password=creds['password'],
+            host=creds['host'],
+            port=creds['port']
+        )
+        cursor = connection.cursor()
 
     ## delete 
     # I'm deleting to make sure we have the most
@@ -79,7 +94,8 @@ def put_into_sql(data_set):
     phone varchar(255), 
     state varchar(255), 
     website varchar(255),
-    bio_text TEXT);"""
+    bio_text TEXT,
+    photo_url varchar(255));"""
 
 
     cursor.execute(sql_command)
@@ -105,14 +121,15 @@ def put_into_sql(data_set):
             phone, 
             state, 
             website,
-            bio_text)
+            bio_text,
+            photo_url)
             VALUES ('{address}', '{bioguide_id}', '{class_}', '{email}', '{first_name}', '{last_name}', 
             '{leadership_position}', '{member_full}', '{party}', '{phone}', '{state}',
-            '{website}', '{bio_text}');"""
+            '{website}', '{bio_text}', '{photo_url}');"""
 
             sql_command = format_str.format(address=p[0], bioguide_id=p[1], class_=p[2], email=p[3], first_name=p[4], last_name=p[5], 
                               leadership_position=p[6], member_full=p[7], party=p[8],phone=p[9], state=p[10],
-                              website=p[11], bio_text=p[12])
+                              website=p[11], bio_text=p[12], photo_url=p[13])
             cursor.execute(sql_command)
 
     # never forget this, if you want the changes to be saved:
@@ -180,16 +197,33 @@ def create_new_table_checker(df):
     import psycopg2
     import urlparse
 
-    urlparse.uses_netloc.append("postgres")
-    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+    try:
+        urlparse.uses_netloc.append("postgres")
+        url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
 
-    connection = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port
-            )
+        connection = psycopg2.connect(
+                database=url.path[1:],
+
+
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port
+                )
+
+        cursor = connection.cursor()
+    except:
+        urlparse.uses_netloc.append("postgres")
+        creds = pd.read_json('/Users/Alexanderhubbard/Documents/projects/reps_app/app/db_creds.json').loc[0,'creds']
+
+        connection = psycopg2.connect(
+            database=creds['database'],
+            user=creds['user'],
+            password=creds['password'],
+            host=creds['host'],
+            port=creds['port']
+        )
+        cursor = connection.cursor()
 
     df_checker = pd.read_sql_query("""select * from current_senate_bio""", connection)
     connection.close()
@@ -222,10 +256,12 @@ def get_senator_info():
     ## It only makes it here if it collected data.
     ## If 403 too many times the function returns
     keep_moving = create_new_table_checker(df)
+    keep_moving = True
     print 'should I keep scraping? {}'.format(keep_moving)
     if keep_moving == True:
         print 'data collection 2'
         df = get_bio_text(df)
+        df['photo_url'] = df['bioguide_id'].apply(lambda x: 'http://bioguide.congress.gov/bioguide/photo/{}/{}.jpg'.format(x[0],x))
         print 'put into sql'
         put_into_sql(df)
         print 'done!'
