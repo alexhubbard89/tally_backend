@@ -25,7 +25,8 @@ class user_info(object):
     """
     This will be used to store users to db and and test login credentials.
     
-    Attributes: email and password
+    Attributes: email, password, if password is correct, name, gender, dob,
+    street, zip_code, and user_df
     """
     
     def create_user_params(self):

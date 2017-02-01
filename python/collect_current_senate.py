@@ -42,33 +42,20 @@ def put_into_sql(data_set):
     import urlparse
     import pandas as pd
 
-    try:
-        urlparse.uses_netloc.append("postgres")
-        url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
 
-        connection = psycopg2.connect(
-                database=url.path[1:],
+    connection = psycopg2.connect(
+            database=url.path[1:],
 
 
-                user=url.username,
-                password=url.password,
-                host=url.hostname,
-                port=url.port
-                )
+            user=url.username,
+            password=url.password,
+            host=url.hostname,
+            port=url.port
+            )
 
-        cursor = connection.cursor()
-    except:
-        urlparse.uses_netloc.append("postgres")
-        creds = pd.read_json('/Users/Alexanderhubbard/Documents/projects/reps_app/app/db_creds.json').loc[0,'creds']
-
-        connection = psycopg2.connect(
-            database=creds['database'],
-            user=creds['user'],
-            password=creds['password'],
-            host=creds['host'],
-            port=creds['port']
-        )
-        cursor = connection.cursor()
+    cursor = connection.cursor()
 
     ## delete 
     # I'm deleting to make sure we have the most
@@ -197,33 +184,20 @@ def create_new_table_checker(df):
     import psycopg2
     import urlparse
 
-    try:
-        urlparse.uses_netloc.append("postgres")
-        url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
+    urlparse.uses_netloc.append("postgres")
+    url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
 
-        connection = psycopg2.connect(
-                database=url.path[1:],
+    connection = psycopg2.connect(
+            database=url.path[1:],
 
 
-                user=url.username,
-                password=url.password,
-                host=url.hostname,
-                port=url.port
-                )
+            user=url.username,
+            password=url.password,
+            host=url.hostname,
+            port=url.port
+            )
 
-        cursor = connection.cursor()
-    except:
-        urlparse.uses_netloc.append("postgres")
-        creds = pd.read_json('/Users/Alexanderhubbard/Documents/projects/reps_app/app/db_creds.json').loc[0,'creds']
-
-        connection = psycopg2.connect(
-            database=creds['database'],
-            user=creds['user'],
-            password=creds['password'],
-            host=creds['host'],
-            port=creds['port']
-        )
-        cursor = connection.cursor()
+    cursor = connection.cursor()
 
     df_checker = pd.read_sql_query("""select * from current_senate_bio""", connection)
     connection.close()
