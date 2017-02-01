@@ -89,7 +89,7 @@ def create_user():
         user.street = request.form['street']
         user.zip_code = request.form['zip_code']
 
-    print zip_code
+    print user.zip_code
     user.user_df = tally_toolkit.user_info.create_user_params(user)
     user_made = user_info.user_info_to_sql(user)
 
