@@ -91,7 +91,7 @@ def create_user():
 
     print user.zip_code
     user.user_df = tally_toolkit.user_info.create_user_params(user)
-    user_made = user_info.user_info_to_sql(user)
+    user_made = tally_toolkit.user_info.user_info_to_sql(user)
 
     if user_made == True:
         return jsonify(result=True)
