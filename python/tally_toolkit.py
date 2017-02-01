@@ -5,6 +5,8 @@ import urlparse
 import hashlib, uuid
 from uszipcode import ZipcodeSearchEngine
 import us
+import os
+import sys
     
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
