@@ -11,7 +11,7 @@ import sys
 import json
 import logging
 import imp
-reps_query = imp.load_source('module', 'python/reps_query.py')
+tally_toolkit = imp.load_source('module', 'python/tally_toolkit.py')
 
 
 app = Flask(__name__)
@@ -25,12 +25,13 @@ app.logger.setLevel(logging.ERROR)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        user = tally_toolkit.user_info()
+        user.email = request.form['email']
+        user.password = request.form['password']
+        matched_credentials = tally_toolkit.user_info.search_user(user)
 
-        username = request.form['username']
-        password = request.form['password']
-        matched_credentials = reps_query.search_user(username, password)    
         if matched_credentials == True:
-            user_data = reps_query.get_user_data(username)
+            user_data = tally_toolkit.user_info.get_user_dashboard_data(user)
             print user_data
             return render_template('login_yes.html', user_data=user_data)
         else:
@@ -43,25 +44,18 @@ def index():
 ## Login testing
 @app.route("/login", methods=["POST"])
 def login():
+    user = tally_toolkit.user_info()
     try:
         data = json.loads(request.data.decode())
-        try:
-            username = data['username']
-        except:
-            username = data['email']
-        password = data['password']
+        user.email = data['email']
+        user.password = data['password']
     except:
-        try:
-            username = request.form['username']
-        except:
-            username = request.form['email']
-        password = request.form['password']
-    matched_credentials = reps_query.search_user(username, password)    
+        user.email = request.form['email']
+        user.password = request.form['password']
+    matched_credentials = tally_toolkit.user_info.search_user(user)
     if matched_credentials == True:
-        user_data = reps_query.get_user_data(username)
-        user_data = user_data.drop(['dob'], 1)
+        user_data = tally_toolkit.user_info.get_user_dashboard_data(user)
         print user_data
-        # return json.dumps(results=user_data.to_dict(orient='records'))
         return jsonify(results=user_data.to_dict(orient='records'))
     else:
         error = "Wrong user name or password"
@@ -71,30 +65,33 @@ def login():
 ## Create New User
 @app.route("/new_user", methods=["POST"])
 def create_user():
+    user = tally_toolkit.user_info()
     try:
         print 'trying first way'
         data = json.loads(request.data.decode())
-        email = data['email']
-        password = data['password']
-        first_name = data['first_name']
-        last_name = data['last_name']
-        gender = data['gender']
-        dob = data['dob']
-        street = data['street']
-        zip_code = data['zip_code']
+        user.email = data['email']
+        user.password = data['password']
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+        user.gender = data['gender']
+        user.dob = data['dob']
+        user.street = data['street']
+        user.zip_code = data['zip_code']
+
     except:
         print 'trying second way'
-        email = request.form['email']
-        password = request.form['password']
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        gender = request.form['gender']
-        dob = request.form['dob']
-        street = request.form['street']
-        zip_code = request.form['zip_code']
+        user.email = request.form['email']
+        user.password = request.form['password']
+        user.first_name = request.form['first_name']
+        user.last_name = request.form['last_name']
+        user.gender = request.form['gender']
+        user.dob = request.form['dob']
+        user.street = request.form['street']
+        user.zip_code = request.form['zip_code']
+
     print zip_code
-    df = reps_query.create_user_params(email, password, first_name, last_name, gender, dob, street, zip_code)
-    user_made = reps_query.user_info_to_sql(df)
+    user.user_df = tally_toolkit.user_info.create_user_params(user)
+    user_made = user_info.user_info_to_sql(user)
 
     if user_made == True:
         return jsonify(result=True)
