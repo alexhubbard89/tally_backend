@@ -3,11 +3,11 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import imp
-# collect_current_congress = imp.load_source('module', './python/collect_current_congress.py')
-# collect_current_senate = imp.load_source('module', './python/collect_current_senate.py')
+collect_current_congress = imp.load_source('module', './python/collect_current_congress.py')
+collect_current_senate = imp.load_source('module', './python/collect_current_senate.py')
 
-collect_current_congress = imp.load_source('module', 'collect_current_congress.py')
-collect_current_senate = imp.load_source('module', 'collect_current_senate.py')
+# collect_current_congress = imp.load_source('module', 'collect_current_congress.py')
+# collect_current_senate = imp.load_source('module', 'collect_current_senate.py')
 
 fromaddr = 'tallyscraper@gmail.com'
 toaddrs = 'alexhubbard89@gmail.com'
