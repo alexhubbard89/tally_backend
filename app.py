@@ -11,7 +11,7 @@ import sys
 import json
 import logging
 import imp
-tally_toolkit = imp.load_source('module', 'python/tally_toolkit.py')
+tally_toolkit = imp.load_source('module', './python/tally_toolkit.py')
 
 
 app = Flask(__name__)
