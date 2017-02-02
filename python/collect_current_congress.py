@@ -240,6 +240,8 @@ class bio_data_collector(object):
                     twitter_df = pd.DataFrame(pd.DataFrame(twitter_array)[0].str.replace('http://', '').str.replace('https://', ''))
                     twitter_url = twitter_df[0].value_counts().reset_index().loc[0, 'index']
                     twitter_url = twitter_url.strip("javaScript:openWin('").strip(")'").replace('witter', 'twiter').replace('ttwitter', 'twiter')
+                    twitter_url = twitter_url.replace('//tt', 't').replace('http://', '').replace('https://', '').replace('//', '')
+                    twitter_url = 'https://{}'.format(twitter_url)
                     try:
                         twitter_handle = '@{}'.format(twitter_url.split('.com/')[1].replace('#', '').replace('!','')).replace('@/','@')
                     except:

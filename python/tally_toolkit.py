@@ -7,6 +7,9 @@ from uszipcode import ZipcodeSearchEngine
 import us
 import os
 import sys
+import requests
+from bs4 import BeautifulSoup
+import datetime
     
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
@@ -20,6 +23,7 @@ def open_connection():
         port=url.port
         )
     return connection
+
 
 class user_info(object):
     """
@@ -228,3 +232,175 @@ class user_info(object):
         self.street = street
         self.zip_code = zip_code
         self.user_df = user_df
+
+
+class vote_collector(object):
+    """
+    This class will be used to collect votes from congress.
+    
+    
+    Attributes:
+    house_vote_menu - votes collected for this year's vote menu.
+    to_db - how many new rows were put in the database.
+    
+    """
+
+    def house_vote_menu(self, year):
+        ## Set columns
+        column = ['roll', 'roll_link', 'date', 'issue', 'issue_link',
+                  'question', 'result', 'title_description']
+
+        ## Structure data frame
+        df = pd.DataFrame(columns=[column])
+        page_num = 0
+        next_page = True
+
+        url = 'http://clerk.house.gov/evs/{}/ROLL_000.asp'.format(year)
+        print url
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'lxml')
+        congress = str(soup.find_all('body')[0].find_all('h2')[0]).split('<br/>\r\n ')[1].split('<')[0]
+        session = str(soup.find_all('body')[0].find_all('h2')[0]).split('Congress - ')[1].split('<')[0]
+
+        while next_page == True:
+            ## Vistit page to scrape
+            url = 'http://clerk.house.gov/evs/{}/ROLL_{}00.asp'.format(year, page_num)
+            print url
+            page = requests.get(url)
+
+            if len(page.content.split('The page you requested cannot be found')) == 1:
+                soup = BeautifulSoup(page.content, 'lxml')
+
+                ## Find section to scrape
+                x = soup.find_all('tr')
+
+                ## Find sectino to scrape
+                x = soup.find_all('tr')
+                for i in range(1, len(x)):
+                    counter = 0
+                    ## Make array to hold data scraped by row
+                    test = []
+                    for y in x[i].find_all('td'):
+                        ## scrape the text data
+                        test.append(y.text)
+                        if ((counter == 0) | (counter == 2)):
+                            if len(y.find_all('a', href=True)) > 0:
+                                ## If there's a link scrape it
+                                for a in y.find_all('a', href=True):
+                                    test.append(a['href'])
+                            else:
+                                test.append(' ')
+                        counter +=1
+                    ## The row count matches with the
+                    ## number of actions take in congress
+                    df.loc[int(test[0]),] = test
+                page_num +=1
+            else:
+                next_page = False
+
+        df['date'] = df['date'].apply(lambda x: str(
+            datetime.datetime.strptime('{}-{}-{}'.format(x.split('-')[0],
+                                                         x.split('-')[1],year), '%d-%b-%Y')))
+        df.loc[:, 'congress'] = congress
+        df.loc[:, 'session'] = session
+        df.loc[:, 'roll'] = df.loc[:, 'roll'].astype(int)
+        df.loc[:, 'roll_id'] = (df.loc[:, 'congress'].astype(str) + df.loc[:, 'session'].astype(str) +
+                               df.loc[:, 'roll'].astype(str)).astype(int)
+
+        self.house_vote_menu = df.sort_values('roll').reset_index(drop=True)
+        
+        
+    def put_vote_menu(self):
+        connection = open_connection()
+        cursor = connection.cursor()
+
+        for i in range(len(self.house_vote_menu)):
+            print i
+            ## Remove special character from the title
+            try:
+                self.house_vote_menu.loc[i, 'title_description'] = self.house_vote_menu.loc[i, 'title_description'].replace("'", "''")
+            except:
+                'hold'
+            try:
+                self.house_vote_menu.loc[i, 'title_description'] = self.house_vote_menu.loc[i, 'title_description'].encode('utf-8').replace('\xc3\xa1','a')
+            except:
+                'hold'
+            try:
+                self.house_vote_menu.loc[i, 'question'] = self.house_vote_menu.loc[i, 'question'].encode('utf-8').replace('\xc2\xa0', '')
+            except:
+                'hold'
+            try:
+                self.house_vote_menu.loc[i, 'title_description'] = self.house_vote_menu.loc[i, 'title_description'].replace('\xc2\xa0', '').encode('utf-8')
+            except:
+                'hold'
+            x = list(self.house_vote_menu.loc[i,])
+
+            for p in [x]:
+                format_str = """
+                INSERT INTO house_vote_menu (
+                roll, 
+                roll_link, 
+                date, 
+                issue, 
+                issue_link, 
+                question,
+                result, 
+                title_description, 
+                congress, 
+                session, 
+                roll_id)
+                VALUES ('{roll}', '{roll_link}', '{date}', '{issue}',
+                 '{issue_link}', '{question}', '{result}', '{title_description}',
+                 '{congress}', '{session}', '{roll_id}');"""
+
+
+            sql_command = format_str.format(roll=p[0], roll_link=p[1], 
+                date=p[2], issue=p[3], issue_link=p[4], question=p[5], result=p[6],
+                title_description=p[7], congress=p[8], session=p[9], roll_id=p[10])
+            try:
+                cursor.execute(sql_command)
+                connection.commit()
+            except:
+                connection.rollback()
+                print 'duplicate'
+        connection.close()
+        
+    def daily_house_menu(self):
+        """
+        In this method I will be collecting the house vote menu
+        for the entire current year. I will then compare the 
+        highest roll call vote in the database to the collected
+        data. If I have collected data that is not in the db
+        then I'll insert the new data points. I will this save
+        an attribute to say how many new rows were inserted
+        to the db. That number will be included in the daily
+        emails.
+        """
+
+        ## Connect to db
+        connection = open_connection()
+
+        ## Query db for max roll call for current year
+        current_year = datetime.date.today().year
+
+        sql_query = """
+        SELECT max(roll) FROM house_vote_menu
+        where date(date) >= '{}-01-01;'
+        """.format(current_year)
+        house_menu = pd.read_sql_query(sql_query, connection)
+
+        ## Collect house vote menu for current year and compare
+        vote_collector.house_vote_menu(self, current_year)
+        self.house_vote_menu = self.house_vote_menu[self.house_vote_menu['roll'] > 
+                                                    house_menu.loc[0,'max']].reset_index(drop=True)
+        num_rows = len(self.house_vote_menu)
+        
+        if num_rows == 0:
+            self.to_db = 'No new vote menu data.'
+        if num_rows > 0:
+            self.to_db = '{} new vote(s) in the data base.'.format(num_rows)
+            vote_collector.put_vote_menu(self)
+
+    def __init__(self, house_vote_menu=None, to_db=None):
+        self.house_vote_menu = house_vote_menu
+        self.to_db = to_db
