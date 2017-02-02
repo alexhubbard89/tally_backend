@@ -4,10 +4,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import imp
 collect_current_congress = imp.load_source('module', './python/collect_current_congress.py')
-# collect_current_senate = imp.load_source('module', './python/collect_current_senate.py')
+tally_toolkit = imp.load_source('module', './python/tally_toolkit.py')
 
 # collect_current_congress = imp.load_source('module', 'collect_current_congress.py')
-# collect_current_senate = imp.load_source('module', 'collect_current_senate.py')
+# tally_toolkit = imp.load_source('module', '/Users/Alexanderhubbard/Documents/projects/tally_backend/python/tally_toolkit.py')
 
 fromaddr = 'tallyscraper@gmail.com'
 toaddrs = 'alexhubbard89@gmail.com'
@@ -20,19 +20,24 @@ bad_collection = ''
 try:
 	congress_data = collect_current_congress.bio_data_collector()
 	to_collect_or_not_collect = collect_current_congress.bio_data_collector.collect_current_congress(congress_data)
-	good_collection += """
-	Current Congress: {}""".format(to_collect_or_not_collect)
+	good_collection += """\n\tCurrent Congress: {}""".format(to_collect_or_not_collect)
 
 except:
-    bad_collection += """
-    Current Congress"""
+    bad_collection += """\nCurrent Congress"""
+
+try:
+	vc_data = tally_toolkit.vote_collector()
+	tally_toolkit.vote_collector.daily_house_menu(vc_data)
+	good_collection += """\n\tHouse vote menu: {}""".format(vc_data.to_db)
+except:
+	bad_collection += """\nHouse vote menu"""
 
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
 
 Data colltion script(s) that worked: 
 {}
-Data colltion script(s) that didn't work: 
+\nData colltion script(s) that didn't work: 
 {}""".format(good_collection, bad_collection)
 body = MIMEText(body_msg)
 msg.attach(body)
