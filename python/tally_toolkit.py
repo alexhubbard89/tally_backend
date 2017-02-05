@@ -10,7 +10,6 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 import datetime
-from unidecode import unidecode
 import re
 import us
     
@@ -546,7 +545,8 @@ class committee_collector(object):
                         district_num = int(split_sd[j])
                         membership.loc[i, 'district_num'] = district_num
                 ## Save member name and remove special charaters with unidecode
-                membership.loc[i, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
+                ## no need to collect names for now
+                # membership.loc[i, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
                 ## Clean position text
                 position = str(a[i]).split(', {}'.format(state_short))[1].strip('</li>').strip('\n').strip('</o')
                 ## If there is a position save it. Otherwise it's none.
@@ -588,7 +588,8 @@ class committee_collector(object):
                         district_num = int(split_sd[j])
                         membership.loc[counter, 'district_num'] = district_num
                 ## Save member name and remove special charaters with unidecode
-                membership.loc[counter, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
+                ## no need to collect names for now
+                # membership.loc[counter, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
                 ## Clean position text
                 position = str(a[i]).split(', {}'.format(state_short))[1].strip('</li>').strip('\n').strip('</o')
                 ## If there is a position save it. Otherwise it's none.
