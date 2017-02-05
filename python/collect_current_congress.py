@@ -27,6 +27,7 @@ def open_connection():
         )
     return connection
 
+
 class bio_data_collector(object):
     """
     This will be used to collet information for each person in congress.

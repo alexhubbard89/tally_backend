@@ -10,6 +10,9 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 import datetime
+from unidecode import unidecode
+import re
+import us
     
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_BROWN_URL"])
@@ -404,3 +407,301 @@ class vote_collector(object):
     def __init__(self, house_vote_menu=None, to_db=None):
         self.house_vote_menu = house_vote_menu
         self.to_db = to_db
+
+class committee_collector(object):
+    """
+    This class will be used to collect committee data.
+    What committees are there, what subcommittees are there,
+    and whose apart of both of them.
+    
+    Attributes:
+    
+    """
+    
+    def get_committees(self):
+        """
+        This method will be used to grab all of
+        the house of representatives committees.
+        """
+
+        ## URL for house committees
+        url = 'http://clerk.house.gov/committee_info/index.aspx'
+        r = requests.get(url)
+        page = BeautifulSoup(r.content, 'lxml')
+
+
+        ## Find div where committees are held
+        x = page.find_all('div', id='com_directory')[0].find_all('ul')
+        a = str(x[0]).split('<li>')
+
+        ## Set up dataframe to save to
+        committee_links = pd.DataFrame()
+
+        ## Loop through each committee and save name and url
+        for i in range(1, len(a)):
+            try:
+                committee_links.loc[i, 'committee'] = a[i].split('">')[1].split('</a')[0]
+                committee_links.loc[i, 'url'] = 'http://clerk.house.gov{}'.format(a[i].split('href="')[1].split('">')[0])
+            except:
+                "If there is no linke, then don't store"
+
+        ## Loop started at 1, so df started at 1. Reset df index.
+        self.committee_links = committee_links.reset_index(drop=True)
+        
+    def get_subcommittees(self):
+        """
+        This method will be used to grab all of
+        the house of representatives subcommittees.
+        """
+
+        ## Set up master dataframe to save to
+        master_subcommittees = pd.DataFrame()
+
+        ## Loop through all master committees
+        for committee in self.committee_links ['committee']:
+
+            ## Find committee url to search for subcommittees
+            committee_search = self.committee_links.loc[self.committee_links['committee'].str.lower() == committee.lower()].reset_index(drop=True)
+            committee = committee_search.loc[0, 'committee']
+            url = committee_search.loc[0, 'url']
+            r = requests.get(url)
+            page = BeautifulSoup(r.content, 'lxml')
+
+            ## Split where the subcommittee list is
+            x = page.find_all('div', id='subcom_list')[0].find_all('ul')
+
+            ## Set up dataframe to save to
+            subcommittee = pd.DataFrame()
+
+            ## Loop through each subcommittee and save name and url
+            if len(x):
+                a = str(x[0]).split('<li>')
+
+                for i in range(1, len(a)):
+                    try:
+                        subcommittee.loc[i, 'subcommittee'] = a[i].split('">')[1].split('</a')[0].strip('\t').strip('\n').strip('\r')
+                        subcommittee.loc[i, 'url'] = 'http://clerk.house.gov{}'.format(a[i].split('href="')[1].split('">')[0])
+                    except:
+                        "If there is no linke, then don't store"
+
+                ## Loop started at 1, so df started at 1. Reset df index.
+                subcommittee.loc[:, 'committee'] = committee
+
+            ## Append subcommittee data
+            master_subcommittees = master_subcommittees.append(subcommittee)
+
+        ## Save subcommittee data to class attribute
+        self.subcommittee_links = master_subcommittees.reset_index(drop=True)
+        
+    def get_committee_memb(self, committee, subcommittee=None):
+        """
+        This method will be used to grab membership
+        for committees and subcommittees.
+        """
+
+        ## Check if we are searching for committee or subcommittee.
+        ## Subset the data set to search for url
+        ## Grab committee and subcommittee names.
+        ## Search URL
+        if subcommittee == None:
+            committee_search = self.committee_links.loc[self.committee_links['committee'].str.lower() == committee.lower()].reset_index(drop=True)
+            committee = committee_search.loc[0, 'committee']
+        elif subcommittee != None:
+            committee_search = self.subcommittee_links.loc[((self.subcommittee_links['committee'].str.lower() == committee.lower()) &
+                                                        (self.subcommittee_links['subcommittee'].str.lower() == subcommittee.lower()))].reset_index(drop=True)
+            committee = committee_search.loc[0, 'committee']
+            subcommittee = committee_search.loc[0, 'subcommittee']
+        url = committee_search.loc[0, 'url']
+        r = requests.get(url)
+        page = BeautifulSoup(r.content, 'lxml')
+
+        #### There are two columns of people. Search them separately. ####
+
+        ## Set dataframe to save data to
+        membership = pd.DataFrame()
+
+        ## Section 1
+        ## Find where data is
+        x = page.find_all('div', id='primary_group')[0].find_all('ol')
+        a = str(x[0]).split('<li>')
+
+        ## Loop through all li items to find people.
+        for i in range(1, len(a)):
+            ## If vacancy then there is no person.
+            if 'Vacancy' not in a[i]:
+                ## Collect state short and district number
+                state_dist = str(a[i]).split('statdis=')[1].split('">')[0]
+
+                ## Split the string by number and letters
+                split_sd = re.split('(\d+)', state_dist)
+                for j in range(len(split_sd)):
+                    if j == 0:
+                        ## Letters is state short
+                        state_short = str(split_sd[j])
+                        membership.loc[i, 'state_short'] = state_short
+                        state_long = str(us.states.lookup(state_short))
+                        membership.loc[i, 'state_long'] = state_long
+                    elif j == 1:
+                        ## Numbers is district number
+                        district_num = int(split_sd[j])
+                        membership.loc[i, 'district_num'] = district_num
+                ## Save member name and remove special charaters with unidecode
+                membership.loc[i, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
+                ## Clean position text
+                position = str(a[i]).split(', {}'.format(state_short))[1].strip('</li>').strip('\n').strip('</o')
+                ## If there is a position save it. Otherwise it's none.
+                if position != '':
+                    position = position.replace(', ', '').strip('</li>')
+                    position = position.strip('\n').strip('</li>     ').strip('\n').strip('\r')
+                    membership.loc[i, 'committee_leadership'] = position
+                else:
+                    membership.loc[i, 'committee_leadership'] = None
+
+        ## Reset index so I can save to the proper index in the next loop
+        membership = membership.reset_index(drop=True)
+
+        ## Section 2
+        ## Find where data is
+        x = page.find_all('div', id='secondary_group')[0].find_all('ol')
+        a = str(x[0]).split('<li>')
+
+        ## Length of dataframe is where the index saving starts
+        counter = len(membership)
+
+        ## Loop through all li items to find people.
+        for i in range(1, len(a)):
+            if 'Vacancy' not in a[i]:
+                ## Collect state short and district number
+                state_dist = str(a[i]).split('statdis=')[1].split('">')[0]
+
+                ## Split the string by number and letters
+                split_sd = re.split('(\d+)', state_dist)
+                for j in range(len(split_sd)):
+                    if j == 0:
+                        ## Letters is state short
+                        state_short = str(split_sd[j])
+                        membership.loc[counter, 'state_short'] = state_short
+                        state_long = str(us.states.lookup(state_short))
+                        membership.loc[counter, 'state_long'] = state_long
+                    elif j == 1:
+                        ## Numbers is district number
+                        district_num = int(split_sd[j])
+                        membership.loc[counter, 'district_num'] = district_num
+                ## Save member name and remove special charaters with unidecode
+                membership.loc[counter, 'member_full'] = unidecode(str(a[i]).split('{}">'.format(state_dist))[1].split('</a>')[0].decode("utf8")).replace('A!', 'a').replace('A(c)', 'e').replace("'", "''")
+                ## Clean position text
+                position = str(a[i]).split(', {}'.format(state_short))[1].strip('</li>').strip('\n').strip('</o')
+                ## If there is a position save it. Otherwise it's none.
+                if position != '':
+                    position = position.replace(', ', '').strip('</li>')
+                    position = position.strip('\n').strip('</li>     ').strip('\n').strip('\r')
+                    membership.loc[counter, 'committee_leadership'] = position
+                else:
+                    membership.loc[counter, 'committee_leadership'] = None
+                ## Increase counter
+                counter += 1
+        ## If we found data then add committee and subcommittee details.
+        if len(membership) > 0:
+            membership.loc[:, 'committee'] = committee
+            if subcommittee != None:
+                membership.loc[:, 'subcommittee'] = subcommittee
+            else:
+                membership.loc[:, 'subcommittee'] = None
+            membership = membership.reset_index(drop=True)
+        return membership
+
+
+    def get_all_membership(self):
+        """
+        This method will collect membership for all committees
+        and subcommittees.
+        """
+
+        ## Make master dataframe for committees and subcommittees
+        overall = self.committee_links.append(self.subcommittee_links).reset_index(drop=True)
+        overall.loc[overall['subcommittee'].isnull(), 'subcommittee'] = None
+
+        ## Set dataframe to save data to
+        master_committees = pd.DataFrame()
+
+        ## Loop through all committee urls.
+        ## Append to master data set.
+        for i in range(len(overall)):
+            committee_grab = committee_collector.get_committee_memb(self, overall.loc[i, 'committee'], 
+                                                subcommittee=overall.loc[i, 'subcommittee'])
+            master_committees = master_committees.append(committee_grab)
+
+        ## Save all scraped data to attribute
+        self.committee_membership = master_committees.reset_index(drop=True)
+        
+    def membership_to_sql(self):
+        """
+        This method will be used to clean the collected
+        data and put it into sql.
+        """
+        
+        ## Connect
+        connection = open_connection()
+        cursor = connection.cursor()
+
+        ## I'm going to get the bioguide_id from the bio tbale
+        congress_bio = pd.read_sql_query("""SELECT * FROM congress_bio WHERE served_until = 'Present';""", connection)
+
+        ## Join
+        df = pd.merge(self.committee_membership, congress_bio[['bioguide_id', 'district', 'state']],
+             left_on=['state_long', 'district_num'], right_on=['state', 'district']).drop_duplicates()
+        df = df[['committee_leadership', 'committee', 'subcommittee', 'bioguide_id']]
+
+        ## Clean columns
+        df['committee'] = df['committee'].str.replace("'", "''")
+        df['subcommittee'] = df['subcommittee'].str.replace("'", "''")
+
+        ## delete 
+        # I'm deleting to make sure we have the most
+        # up-to-date reps. The collection is small
+        # so it's not a bottle next to do this.
+        try:
+            cursor.execute("""DROP TABLE house_membership;""")
+        except:
+            'table did not exist'
+
+        ## Create table
+        sql_command = """
+            CREATE TABLE house_membership (
+            committee_leadership varchar(255), 
+            committee varchar(255), 
+            subcommittee varchar(255), 
+            bioguide_id varchar(255),
+            UNIQUE (committee, subcommittee, bioguide_id));"""
+
+        cursor.execute(sql_command)
+        connection.commit()
+
+        ## Put each row into sql
+        for i in range(len(df)):
+            print i
+            x = list(df.loc[i,])
+
+            for p in [x]:
+                format_str = """
+                INSERT INTO house_membership (
+                committee_leadership, 
+                committee, 
+                subcommittee, 
+                bioguide_id)
+                VALUES ('{committee_leadership}', '{committee}', '{subcommittee}', '{bioguide_id}');"""
+
+
+            sql_command = format_str.format(committee_leadership=p[0], committee=p[1], 
+                subcommittee=p[2], bioguide_id=p[3])
+            ## Commit to sql
+            cursor.execute(sql_command)
+            connection.commit()
+
+        connection.close()
+    
+    
+    def __init__(self, committee_links=None, subcommittee_links=None, all_committee_links=None, committee_membership=None):
+        self.committee_links = committee_links
+        self.subcommittee_links = subcommittee_links
+        self.committee_membership = committee_membership
