@@ -32,6 +32,17 @@ try:
 except:
 	bad_collection += """\nHouse vote menu"""
 
+try:
+	print 'collect committee data'
+	committee_data = tally_toolkit.committee_collector()
+	tally_toolkit.committee_collector.get_committees(committee_data)
+	tally_toolkit.committee_collector.get_subcommittees(committee_data)
+	tally_toolkit.committee_collector.get_all_membership(committee_data)
+	tally_toolkit.committee_collector.membership_to_sql(committee_data)
+	good_collection += """\n\tHouse committee membership"""
+except:
+	bad_collection += """\ntHouse committee membership"""
+
 msg['Subject'] = "Data Collection Report"
 body_msg = """Data Collection Report
 
