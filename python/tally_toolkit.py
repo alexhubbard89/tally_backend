@@ -205,6 +205,9 @@ class user_info(object):
                 reps_membership = pd.read_sql_query(sql_query, open_connection())
                 user_reps.loc[indices[i], 'reps_membership'] = [reps_membership.transpose().to_dict()]
 
+            ## Clean the rows that have no data
+            user_reps.loc[user_reps['reps_membership'].isnull(), 'reps_membership'] = None
+
             ## Add reps info to user data
             user_results.loc[0, 'reps_data'] =  [user_reps.transpose().to_dict()]
             
